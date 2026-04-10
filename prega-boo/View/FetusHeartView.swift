@@ -22,17 +22,7 @@ struct FetusHeartView: View {
             
             // Inner heart gradient overlay
             HeartShape()
-                .stroke(
-                    LinearGradient(
-                        gradient: Gradient(colors: [
-                            Color.white.opacity(0.6),
-                            Color.white.opacity(0.0)
-                        ]),
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    ),
-                    lineWidth: 2
-                )
+                .stroke(Color.white.opacity(0.4), lineWidth: 2)
             
             // Fetus inside heart
             VStack {
@@ -48,7 +38,8 @@ struct FetusHeartView: View {
                                     accentColor.opacity(0.6)
                                 ]),
                                 center: .topLeading,
-                                radius: 30
+                                startRadius: 5,
+                                endRadius: 30
                             )
                         )
                         .frame(width: 50, height: 50)
