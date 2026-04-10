@@ -5,45 +5,98 @@ struct FetusHeartView: View {
     
     var body: some View {
         ZStack {
-            // Heart container
+            // Heart container with gradient
             HeartShape()
-                .fill(Color.white.opacity(0.75))
-                .shadow(color: Color.black.opacity(0.15), radius: 24, x: 0, y: 12)
+                .fill(
+                    LinearGradient(
+                        gradient: Gradient(colors: [
+                            Color.white.opacity(0.95),
+                            Color.white.opacity(0.70)
+                        ]),
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+                .shadow(color: Color.black.opacity(0.25), radius: 32, x: 4, y: 16)
+                .shadow(color: accentColor.opacity(0.15), radius: 20, x: 0, y: 8)
             
-            // Fetus silhouette inside
+            // Inner heart gradient overlay
+            HeartShape()
+                .stroke(
+                    LinearGradient(
+                        gradient: Gradient(colors: [
+                            Color.white.opacity(0.6),
+                            Color.white.opacity(0.0)
+                        ]),
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    ),
+                    lineWidth: 2
+                )
+            
+            // Fetus inside heart
             VStack {
                 HStack {
                     Spacer()
+                    
+                    // Head
                     Circle()
-                        .fill(accentColor.opacity(0.8))
-                        .frame(width: 45, height: 45)
-                        .offset(x: -8, y: -20)
+                        .fill(
+                            RadialGradient(
+                                gradient: Gradient(colors: [
+                                    accentColor.opacity(0.9),
+                                    accentColor.opacity(0.6)
+                                ]),
+                                center: .topLeading,
+                                radius: 30
+                            )
+                        )
+                        .frame(width: 50, height: 50)
+                        .offset(x: -12, y: -18)
                 }
-                .padding(.top, 20)
-                .padding(.right, 30)
+                .padding(.top, 24)
+                .padding(.trailing, 28)
                 
                 Spacer()
                 
-                HStack {
-                    VStack(spacing: 6) {
-                        RoundedRectangle(cornerRadius: 8)
-                            .fill(accentColor.opacity(0.7))
-                            .frame(width: 16, height: 32)
+                // Body
+                HStack(spacing: 0) {
+                    VStack(spacing: 4) {
+                        // Torso
+                        RoundedRectangle(cornerRadius: 10)
+                            .fill(
+                                LinearGradient(
+                                    gradient: Gradient(colors: [
+                                        accentColor.opacity(0.85),
+                                        accentColor.opacity(0.6)
+                                    ]),
+                                    startPoint: .top,
+                                    endPoint: .bottom
+                                )
+                            )
+                            .frame(width: 20, height: 38)
                         
-                        RoundedRectangle(cornerRadius: 8)
-                            .fill(accentColor.opacity(0.6))
-                            .frame(width: 12, height: 24)
+                        // Legs
+                        HStack(spacing: 6) {
+                            RoundedRectangle(cornerRadius: 6)
+                                .fill(accentColor.opacity(0.7))
+                                .frame(width: 8, height: 20)
+                            
+                            RoundedRectangle(cornerRadius: 6)
+                                .fill(accentColor.opacity(0.65))
+                                .frame(width: 8, height: 20)
+                        }
                     }
-                    .offset(x: 12, y: 8)
+                    .offset(x: 8, y: 0)
                     
                     Spacer()
                 }
-                .padding(.bottom, 40)
-                .padding(.leading, 20)
+                .padding(.bottom, 48)
+                .padding(.leading, 16)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
-        .frame(width: 280, height: 320)
+        .frame(width: 280, height: 340)
     }
 }
 
@@ -55,35 +108,35 @@ struct HeartShape: Shape {
         
         var path = Path()
         
-        // Start at bottom
+        // Bottom point
         path.move(to: CGPoint(x: midX, y: height * 0.95))
         
-        // Right side curve
+        // Right side
         path.addCurve(
-            to: CGPoint(x: width * 0.85, y: height * 0.35),
-            control1: CGPoint(x: width, y: height * 0.75),
-            control2: CGPoint(x: width, y: height * 0.45)
+            to: CGPoint(x: width * 0.88, y: height * 0.32),
+            control1: CGPoint(x: width * 1.05, y: height * 0.80),
+            control2: CGPoint(x: width * 1.05, y: height * 0.42)
         )
         
         // Right lobe
         path.addCurve(
-            to: CGPoint(x: midX * 0.75, y: height * 0.15),
-            control1: CGPoint(x: width * 0.75, y: 0),
-            control2: CGPoint(x: midX * 0.85, y: 0)
+            to: CGPoint(x: midX * 0.70, y: height * 0.08),
+            control1: CGPoint(x: width * 0.88, y: height * -0.05),
+            control2: CGPoint(x: midX * 0.78, y: height * -0.05)
         )
         
         // Left lobe
         path.addCurve(
-            to: CGPoint(x: width * 0.15, y: height * 0.35),
-            control1: CGPoint(x: midX * 0.15, y: 0),
-            control2: CGPoint(x: width * 0.25, y: 0)
+            to: CGPoint(x: width * 0.12, y: height * 0.32),
+            control1: CGPoint(x: midX * 0.22, y: height * -0.05),
+            control2: CGPoint(x: width * 0.12, y: height * -0.05)
         )
         
-        // Left side curve back to bottom
+        // Left side back to bottom
         path.addCurve(
             to: CGPoint(x: midX, y: height * 0.95),
-            control1: CGPoint(x: 0, y: height * 0.45),
-            control2: CGPoint(x: 0, y: height * 0.75)
+            control1: CGPoint(x: -0.05, y: height * 0.42),
+            control2: CGPoint(x: -0.05, y: height * 0.80)
         )
         
         return path
