@@ -2,8 +2,25 @@ import SwiftUI
 
 struct FetusHeartView: View {
     let accentColor: Color
+    @State private var useImage = false
     
     var body: some View {
+        if useImage {
+            imageVersion
+        } else {
+            drawnVersion
+        }
+    }
+    
+    private var imageVersion: some View {
+        ImageAsset.fetusHeartSplash.image
+            .resizable()
+            .scaledToFit()
+            .frame(width: 280, height: 340)
+            .shadow(color: Color.black.opacity(0.25), radius: 32, x: 4, y: 16)
+    }
+    
+    private var drawnVersion: some View {
         ZStack {
             // Heart container with gradient
             HeartShape()
