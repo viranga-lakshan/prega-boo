@@ -12,6 +12,16 @@ struct prega_booApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
+                #if DEBUG
+                .task {
+                    do {
+                        try await SupabaseService.shared.healthCheck()
+                        print("✅ Supabase health check OK")
+                    } catch {
+                        print("❌ Supabase health check failed: \(error)")
+                    }
+                }
+                #endif
         }
     }
 }

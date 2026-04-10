@@ -1,0 +1,10 @@
+# Secrets (do not commit)
+prega-boo/Service/SupabaseSecrets.swift
+
+# macOS
+.DS_Store
+
+# Xcode
+*.xcuserstate
+xcuserdata/
+DerivedData/
