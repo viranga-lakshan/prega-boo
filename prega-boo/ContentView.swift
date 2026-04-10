@@ -8,11 +8,8 @@
 import SwiftUI
 
 struct ContentView: View {
-    private let controller = SplashController()
-
     var body: some View {
-        let model = controller.loadSplashModel()
-        SplashScreenView(model: model)
+        OnboardingFlowView()
     }
 }
 

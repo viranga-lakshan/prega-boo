@@ -5,12 +5,11 @@ final class SplashController {
         SplashModel(
             title: "Prega",
             subtitle: "Boo!",
-            backgroundGradient: [
-                Color(red: 1.0, green: 0.94, blue: 0.94),
-                Color(red: 0.99, green: 0.76, blue: 0.84)
-            ],
-            accentColor: Color(red: 0.87, green: 0.22, blue: 0.42),
-            imageSystemName: "heart.fill"
+            backgroundTopColor: Color(red: 1.0, green: 0.97, blue: 0.97),
+            backgroundBottomColor: Color(red: 0.98, green: 0.80, blue: 0.84),
+            accentColor: Color(red: 0.94, green: 0.39, blue: 0.45),
+            heartAssetName: "fetus-heart-splash",
+            logoAssetName: "prega-boo-logo"
         )
     }
 }

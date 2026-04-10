@@ -3,7 +3,10 @@ import SwiftUI
 struct SplashModel {
     let title: String
     let subtitle: String
-    let backgroundGradient: [Color]
+    let backgroundTopColor: Color
+    let backgroundBottomColor: Color
     let accentColor: Color
-    let imageSystemName: String
+
+    let heartAssetName: String
+    let logoAssetName: String
 }

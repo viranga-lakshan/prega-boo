@@ -1,49 +1,48 @@
 import SwiftUI
 
 struct SplashScreenView: View {
-    private let model: SplashModel
-
-    init(model: SplashModel) {
-        self.model = model
-    }
+    let model: SplashModel
 
     var body: some View {
         ZStack {
             LinearGradient(
-                colors: model.backgroundGradient,
+                colors: [model.backgroundTopColor, model.backgroundBottomColor],
                 startPoint: .top,
                 endPoint: .bottom
             )
             .ignoresSafeArea()
 
             VStack(spacing: 0) {
+                Spacer().frame(height: 90)
+
+                FetusHeartView(assetName: model.heartAssetName)
+                    .padding(.top, 10)
+
                 Spacer()
-                    .frame(height: 60)
 
-                FetusHeartView(accentColor: model.accentColor)
-                    .padding(.vertical, 40)
+                HStack(spacing: 16) {
+                    AssetImage(assetName: model.logoAssetName, fallbackSystemName: "hand.raised.fill")
+                        .scaledToFit()
+                        .frame(width: 72, height: 72)
+                        .foregroundStyle(model.accentColor)
 
-                Spacer()
-
-                VStack(spacing: 8) {
-                    HStack(spacing: 0) {
+                    VStack(alignment: .leading, spacing: 2) {
                         Text(model.title)
-                            .font(.system(size: 48, weight: .bold, design: .rounded))
-                            .foregroundColor(.white)
+                            .font(.system(size: 44, weight: .bold, design: .rounded))
+                            .foregroundStyle(.white)
+
                         Text(model.subtitle)
-                            .font(.system(size: 48, weight: .bold, design: .rounded))
-                            .foregroundColor(model.accentColor)
+                            .font(.system(size: 44, weight: .bold, design: .rounded))
+                            .foregroundStyle(model.accentColor)
                     }
                 }
-                .padding(.bottom, 60)
+                .padding(.bottom, 70)
             }
         }
     }
 }
 
-struct SplashScreenView_Previews: PreviewProvider {
-    static var previews: some View {
-        let controller = SplashController()
-        SplashScreenView(model: controller.loadSplashModel())
-    }
+#Preview {
+    let controller = SplashController()
+    SplashScreenView(model: controller.loadSplashModel())
 }
