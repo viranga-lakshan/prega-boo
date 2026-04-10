@@ -8,14 +8,11 @@
 import SwiftUI
 
 struct ContentView: View {
+    private let controller = SplashController()
+
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
-        }
-        .padding()
+        let model = controller.loadSplashModel()
+        SplashScreenView(model: model)
     }
 }
 
