@@ -16,33 +16,27 @@ struct SplashScreenView: View {
             )
             .ignoresSafeArea()
 
-            VStack(spacing: 40) {
-                ZStack {
-                    Circle()
-                        .fill(Color.white.opacity(0.8))
-                        .frame(width: 260, height: 260)
-                        .shadow(color: Color.black.opacity(0.12), radius: 16, x: 0, y: 8)
+            VStack(spacing: 0) {
+                Spacer()
+                    .frame(height: 60)
 
-                    Image(systemName: model.imageSystemName)
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 120, height: 120)
-                        .foregroundColor(model.accentColor)
-                        .shadow(color: model.accentColor.opacity(0.35), radius: 12, x: 0, y: 8)
+                FetusHeartView(accentColor: model.accentColor)
+                    .padding(.vertical, 40)
+
+                Spacer()
+
+                VStack(spacing: 8) {
+                    HStack(spacing: 0) {
+                        Text(model.title)
+                            .font(.system(size: 48, weight: .bold, design: .rounded))
+                            .foregroundColor(.white)
+                        Text(model.subtitle)
+                            .font(.system(size: 48, weight: .bold, design: .rounded))
+                            .foregroundColor(model.accentColor)
+                    }
                 }
-
-                VStack(spacing: 6) {
-                    Text(model.title)
-                        .font(.system(size: 44, weight: .bold, design: .rounded))
-                        .foregroundColor(.white)
-
-                    Text(model.subtitle)
-                        .font(.system(size: 34, weight: .semibold, design: .rounded))
-                        .foregroundColor(.white.opacity(0.95))
-                }
-                .padding(.top, 12)
+                .padding(.bottom, 60)
             }
-            .padding(.horizontal, 24)
         }
     }
 }
