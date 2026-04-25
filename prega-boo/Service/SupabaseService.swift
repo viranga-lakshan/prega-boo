@@ -50,9 +50,22 @@ final class SupabaseService {
         request.httpBody = body
         request.setValue("application/json", forHTTPHeaderField: "Accept")
         request.setValue(sanitizedAnonKey, forHTTPHeaderField: "apikey")
-        request.setValue("Bearer \(sanitizedAnonKey)", forHTTPHeaderField: "Authorization")
 
-        headers.forEach { request.setValue($0.value, forHTTPHeaderField: $0.key) }
+        // Only set a default anon Authorization token if the caller did not supply one.
+        // (Most authenticated requests pass a user access token.)
+        let hasAuthorizationHeader = headers.keys.contains { $0.lowercased() == "authorization" }
+        if !hasAuthorizationHeader {
+            request.setValue("Bearer \(sanitizedAnonKey)", forHTTPHeaderField: "Authorization")
+        }
+
+        // Sanitize headers (especially Authorization) to avoid 401 due to accidental whitespace/newlines.
+        headers.forEach { key, value in
+            if key.lowercased() == "authorization" {
+                request.setValue(value.trimmingCharacters(in: .whitespacesAndNewlines), forHTTPHeaderField: key)
+            } else {
+                request.setValue(value, forHTTPHeaderField: key)
+            }
+        }
 
         let (data, response) = try await URLSession.shared.data(for: request)
         guard let http = response as? HTTPURLResponse else {

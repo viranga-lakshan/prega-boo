@@ -39,7 +39,7 @@ final class SupabaseAuthService {
     }
 
     struct SupabaseErrorPayload: Codable {
-        let code: Int?
+        let code: String?
         let errorCode: String?
         let msg: String?
         let message: String?
@@ -53,6 +53,24 @@ final class SupabaseAuthService {
             case message
             case error
             case errorDescription = "error_description"
+        }
+
+        init(from decoder: Decoder) throws {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+
+            if let stringCode = try? container.decodeIfPresent(String.self, forKey: .code) {
+                code = stringCode
+            } else if let intCode = try? container.decodeIfPresent(Int.self, forKey: .code) {
+                code = String(intCode)
+            } else {
+                code = nil
+            }
+
+            errorCode = try? container.decodeIfPresent(String.self, forKey: .errorCode)
+            msg = try? container.decodeIfPresent(String.self, forKey: .msg)
+            message = try? container.decodeIfPresent(String.self, forKey: .message)
+            error = try? container.decodeIfPresent(String.self, forKey: .error)
+            errorDescription = try? container.decodeIfPresent(String.self, forKey: .errorDescription)
         }
     }
 

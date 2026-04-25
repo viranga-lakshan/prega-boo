@@ -8,6 +8,10 @@ struct MomAndBabyDetailsView: View {
     @State private var selectedBaby: BabySummary?
     @State private var showBabyDetails = false
 
+    @State private var showVaccineDetails = false
+    @State private var showClinicVisitDetails = false
+    @State private var showGrowthTracking = false
+
     private let columns = [
         GridItem(.flexible(), spacing: 16),
         GridItem(.flexible(), spacing: 16)
@@ -57,6 +61,30 @@ struct MomAndBabyDetailsView: View {
                     }
                 },
                 isActive: $showBabyDetails
+            ) {
+                EmptyView()
+            }
+        )
+        .background(
+            NavigationLink(
+                destination: VaccineDetailsMomView(model: VaccineDetailsMomController().loadModel()),
+                isActive: $showVaccineDetails
+            ) {
+                EmptyView()
+            }
+        )
+        .background(
+            NavigationLink(
+                destination: ClinicVisitDetailsMomView(model: ClinicVisitDetailsMomController().loadModel()),
+                isActive: $showClinicVisitDetails
+            ) {
+                EmptyView()
+            }
+        )
+        .background(
+            NavigationLink(
+                destination: GrowthTrackingMomView(model: GrowthTrackingMomController().loadModel()),
+                isActive: $showGrowthTracking
             ) {
                 EmptyView()
             }
@@ -152,7 +180,15 @@ struct MomAndBabyDetailsView: View {
     }
 
     private func quickActionCard(_ action: MomAndBabyQuickAction) -> some View {
-        Button(action: {}) {
+        Button(action: {
+            if action.title == "Vaccine" {
+                showVaccineDetails = true
+            } else if action.title == "Schedule" {
+                showClinicVisitDetails = true
+            } else if action.title == "Growth" {
+                showGrowthTracking = true
+            }
+        }) {
             VStack(alignment: .leading, spacing: 10) {
                 ZStack {
                     RoundedRectangle(cornerRadius: 16, style: .continuous)

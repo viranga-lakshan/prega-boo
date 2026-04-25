@@ -80,7 +80,8 @@ struct ChildRegistrationView: View {
                    let uiImage = UIImage(data: data) {
                     await MainActor.run {
                         selectedPhoto = Image(uiImage: uiImage)
-                        selectedPhotoData = data
+                        // Normalize to JPEG so Content-Type and bytes always match on upload.
+                        selectedPhotoData = uiImage.jpegData(compressionQuality: 0.85) ?? data
                     }
                 }
             }

@@ -12,6 +12,7 @@ struct MidwifeMomDetailsView: View {
     @State private var errorMessage: String?
 
     @State private var isNavigatingToChildRegistration = false
+    @State private var isNavigatingToUpdateMomDetails = false
 
     var body: some View {
         ZStack {
@@ -49,6 +50,16 @@ struct MidwifeMomDetailsView: View {
                     onSaved: { loadChildren() }
                 ),
                 isActive: $isNavigatingToChildRegistration
+            ) {
+                EmptyView()
+            }
+            .hidden()
+
+            NavigationLink(
+                destination: MomAndBabyDetailsView(
+                    model: MomAndBabyDetailsController().loadModel()
+                ),
+                isActive: $isNavigatingToUpdateMomDetails
             ) {
                 EmptyView()
             }
@@ -139,7 +150,7 @@ struct MidwifeMomDetailsView: View {
             }
 
             Button {
-                errorMessage = "Update Mom Details is not implemented yet."
+                isNavigatingToUpdateMomDetails = true
             } label: {
                 HStack(spacing: 10) {
                     Text(model.updateMomTitle)

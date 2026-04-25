@@ -40,16 +40,21 @@ final class ChildProfilesRepository {
         if let photoData = photoData {
             let fileName = "\(UUID().uuidString).jpg"
             let storagePath = "\(momUserId.uuidString)/\(fileName)"
-            
-            try await supabase.upload(
-                bucket: "child-photos",
-                path: storagePath,
-                data: photoData,
-                contentType: "image/jpeg",
-                accessToken: accessToken
-            )
-            
-            finalPhotoPath = storagePath
+
+            do {
+                try await supabase.upload(
+                    bucket: "child-photos",
+                    path: storagePath,
+                    data: photoData,
+                    contentType: "image/jpeg",
+                    accessToken: accessToken
+                )
+                finalPhotoPath = storagePath
+            } catch {
+                // Photo is optional. If upload fails (policy/content-type/network),
+                // still save the child profile without an image path.
+                finalPhotoPath = idPhotoPath
+            }
         }
 
         var row: [String: Any] = [
@@ -65,15 +70,22 @@ final class ChildProfilesRepository {
         let payload: [[String: Any]] = [row]
         let body = try JSONSerialization.data(withJSONObject: payload)
 
-        _ = try await supabase.request(
-            path: "/rest/v1/child_profiles",
-            method: "POST",
-            headers: [
-                "Content-Type": "application/json",
-                "Prefer": "return=minimal",
-                "Authorization": "Bearer \(accessToken)"
-            ],
-            body: body
-        )
+        do {
+            _ = try await supabase.request(
+                path: "/rest/v1/child_profiles",
+                method: "POST",
+                headers: [
+                    "Content-Type": "application/json",
+                    "Prefer": "return=minimal",
+                    "Authorization": "Bearer \(accessToken)"
+                ],
+                body: body
+            )
+        } catch SupabaseServiceError.httpError(let status, let body) {
+            throw SupabaseServiceError.httpError(
+                status: status,
+                body: "[DB insert child_profiles] \(body)"
+            )
+        }
     }
 }

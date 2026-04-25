@@ -33,7 +33,7 @@ create policy "child_photos_select_midwife_same_district"
       select 1
       from public.user_roles ur
       join public.midwife_profiles mp on mp.user_id = ur.user_id
-      join public.mom_profiles mom on mom.user_id = split_part(storage.objects.name, '/', 1)::uuid
+      join public.mom_profiles mom on mom.user_id = split_part(name, '/', 1)::uuid
       where ur.user_id = auth.uid()
         and ur.role = 'midwife'
         and btrim(lower(mp.district)) = btrim(lower(mom.district))
@@ -56,7 +56,7 @@ create policy "child_photos_insert_own_or_midwife"
           select 1
           from public.user_roles ur
           join public.midwife_profiles mp on mp.user_id = ur.user_id
-          join public.mom_profiles mom on mom.user_id = split_part(storage.objects.name, '/', 1)::uuid
+          join public.mom_profiles mom on mom.user_id = split_part(name, '/', 1)::uuid
           where ur.user_id = auth.uid()
             and ur.role = 'midwife'
             and btrim(lower(mp.district)) = btrim(lower(mom.district))
@@ -81,7 +81,7 @@ create policy "child_photos_update_own_or_midwife"
           select 1
           from public.user_roles ur
           join public.midwife_profiles mp on mp.user_id = ur.user_id
-          join public.mom_profiles mom on mom.user_id = split_part(storage.objects.name, '/', 1)::uuid
+          join public.mom_profiles mom on mom.user_id = split_part(name, '/', 1)::uuid
           where ur.user_id = auth.uid()
             and ur.role = 'midwife'
             and btrim(lower(mp.district)) = btrim(lower(mom.district))
@@ -99,7 +99,7 @@ create policy "child_photos_update_own_or_midwife"
           select 1
           from public.user_roles ur
           join public.midwife_profiles mp on mp.user_id = ur.user_id
-          join public.mom_profiles mom on mom.user_id = split_part(storage.objects.name, '/', 1)::uuid
+          join public.mom_profiles mom on mom.user_id = split_part(name, '/', 1)::uuid
           where ur.user_id = auth.uid()
             and ur.role = 'midwife'
             and btrim(lower(mp.district)) = btrim(lower(mom.district))
