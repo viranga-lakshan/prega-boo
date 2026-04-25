@@ -46,7 +46,10 @@ create policy "user_roles_insert_own"
   on public.user_roles
   for insert
   to authenticated
-  with check (auth.uid() = user_id);
+  with check (
+    auth.uid() = user_id
+    and role in ('mom', 'midwife')
+  );
 
 -- Midwife profiles table
 create table if not exists public.midwife_profiles (

@@ -24,6 +24,7 @@ struct ChildRegistrationView: View {
 
     @State private var selectedPhotoItem: PhotosPickerItem?
     @State private var selectedPhoto: Image?
+    @State private var selectedPhotoData: Data?
 
     @State private var isSubmitting = false
     @State private var errorMessage: String?
@@ -79,6 +80,7 @@ struct ChildRegistrationView: View {
                    let uiImage = UIImage(data: data) {
                     await MainActor.run {
                         selectedPhoto = Image(uiImage: uiImage)
+                        selectedPhotoData = data
                     }
                 }
             }
@@ -340,6 +342,7 @@ struct ChildRegistrationView: View {
                     deliveryMethod: deliveryMethod.isEmpty ? "Spontaneous Vaginal Delivery (SVD)" : deliveryMethod,
                     notes: notes.trimmingCharacters(in: .whitespacesAndNewlines),
                     idPhotoPath: nil,
+                    photoData: selectedPhotoData,
                     accessToken: session.accessToken
                 )
 

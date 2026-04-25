@@ -74,4 +74,27 @@ final class SupabaseService {
             queryItems: [URLQueryItem(name: "select", value: "*")]
         ).0
     }
+
+    /// Upload a file to Supabase Storage.
+    func upload(
+        bucket: String,
+        path: String,
+        data: Data,
+        contentType: String,
+        accessToken: String
+    ) async throws {
+        // path should be e.g. "child-photos/my-image.jpg"
+        let fullPath = "/storage/v1/object/\(bucket)/\(path)"
+        
+        _ = try await request(
+            path: fullPath,
+            method: "POST",
+            headers: [
+                "Authorization": "Bearer \(accessToken)",
+                "Content-Type": contentType,
+                "x-upsert": "true"
+            ],
+            body: data
+        )
+    }
 }

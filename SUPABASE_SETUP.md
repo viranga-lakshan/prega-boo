@@ -50,6 +50,53 @@ This adds a `public.child_profiles` table and RLS so:
 - A mom can read her own children
 - A midwife can read/insert children only for moms in the same district
 
+## Storage setup (child ID photos)
+The app uploads the selected child ID photo to Supabase Storage bucket `child-photos` and saves the object path in `public.child_profiles.id_photo_path`.
+
+1. In Supabase Dashboard → **Storage** → **New bucket**
+	- Name: `child-photos`
+	- Keep it **private** (recommended)
+2. Add Storage RLS policies (required)
+	- Run the migration `supabase/migrations/20260425100000_storage_child_photos_policies.sql` in **SQL Editor** (or via `supabase db push`).
+	- After running, Storage → `child-photos` should show policies allowing:
+	  - a mom to access her own folder
+	  - a midwife to access moms in the same district
+
+## Troubleshooting: “Registration failed (403) … violates row-level security policy”
+If you see an error like:
+- `… policy for table "user_roles"`
+- `… policy for table "mom_profiles"`
+
+It means **Auth user creation succeeded**, but the next insert/upsert into Postgres was blocked by **RLS**.
+
+### 1) Confirm you are editing the same Supabase project the app uses
+In the iOS app, the project is set in `prega-boo/Service/SupabaseSecrets.swift`.
+
+Current repo default project ref is:
+- `acbjsgtoxscdebnapqdz` (from `https://acbjsgtoxscdebnapqdz.supabase.co`)
+
+Make sure your Supabase Dashboard URL is for the same project ref.
+
+### 2) Check RLS flags (should match what you expect)
+Run in Supabase SQL Editor:
+```sql
+select c.relname as table,
+			 c.relrowsecurity as rls_enabled,
+			 c.relforcerowsecurity as rls_forced
+from pg_class c
+join pg_namespace n on n.oid = c.relnamespace
+where n.nspname = 'public'
+	and c.relname in ('user_roles', 'mom_profiles', 'midwife_profiles', 'child_profiles')
+order by c.relname;
+```
+
+### 3) Reset policies using the repo fix migrations
+If registration is blocked, run these in Supabase SQL Editor:
+- `supabase/migrations/20260425113000_fix_midwife_login_rls.sql` (fixes `user_roles` + `midwife_profiles`)
+- `supabase/migrations/20260425115000_fix_mom_profiles_rls.sql` (fixes `mom_profiles`)
+
+After applying, retry registration.
+
 ## Create the table (Supabase CLI method, optional)
 This is useful when you want repeatable migrations.
 
