@@ -2,6 +2,14 @@ import SwiftUI
 
 struct MomAndBabyDetailsView: View {
     let model: MomAndBabyDetailsModel
+    let session: AuthSessionContext?
+    let mom: MomListRow?
+
+    init(model: MomAndBabyDetailsModel, session: AuthSessionContext? = nil, mom: MomListRow? = nil) {
+        self.model = model
+        self.session = session
+        self.mom = mom
+    }
 
     @Environment(\.dismiss) private var dismiss
 
@@ -67,7 +75,11 @@ struct MomAndBabyDetailsView: View {
         )
         .background(
             NavigationLink(
-                destination: VaccineDetailsMomView(model: VaccineDetailsMomController().loadModel()),
+                destination: VaccineDetailsMomView(
+                    model: VaccineDetailsMomController().loadModel(),
+                    session: session,
+                    momUserId: mom?.userId
+                ),
                 isActive: $showVaccineDetails
             ) {
                 EmptyView()

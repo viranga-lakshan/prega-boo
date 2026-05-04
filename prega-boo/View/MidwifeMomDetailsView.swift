@@ -57,7 +57,9 @@ struct MidwifeMomDetailsView: View {
 
             NavigationLink(
                 destination: MomAndBabyDetailsView(
-                    model: MomAndBabyDetailsController().loadModel()
+                    model: MomAndBabyDetailsController().loadModel(),
+                    session: session,
+                    mom: mom
                 ),
                 isActive: $isNavigatingToUpdateMomDetails
             ) {

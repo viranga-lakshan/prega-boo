@@ -4,7 +4,7 @@
 alter table if exists public.mom_profiles enable row level security;
 
 -- Drop ALL policies on mom_profiles to remove conflicting scripts
--- (Supabase policies are OR'ed; a permissive/blocked policy can break intended behavior.)
+-- (Supabase policiesdf are OR'ed; a permissive/blocked policy can break intended behavior.)
 do $$
 declare p record;
 begin

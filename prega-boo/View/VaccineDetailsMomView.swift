@@ -2,11 +2,22 @@ import SwiftUI
 
 struct VaccineDetailsMomView: View {
     let model: VaccineDetailsMomModel
+    let session: AuthSessionContext?
+    let momUserId: UUID?
+
+    init(model: VaccineDetailsMomModel, session: AuthSessionContext? = nil, momUserId: UUID? = nil) {
+        self.model = model
+        self.session = session
+        self.momUserId = momUserId
+    }
 
     @Environment(\.dismiss) private var dismiss
 
     @State private var vaccineName = ""
     @State private var dosage = ""
+
+    @State private var isLoading = false
+    @State private var errorMessage: String?
 
     @State private var vaccines: [VaccineRow] = [
         VaccineRow(dateText: "Today", name: "Rotavirus", dosage: "30mm"),
@@ -34,6 +45,18 @@ struct VaccineDetailsMomView: View {
             }
         }
         .navigationBarBackButtonHidden(true)
+        .onAppear { loadFromDatabaseIfPossible() }
+        .alert(
+            "Error",
+            isPresented: Binding(
+                get: { errorMessage != nil },
+                set: { newValue in if !newValue { errorMessage = nil } }
+            )
+        ) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(errorMessage ?? "")
+        }
     }
 
     private var topBar: some View {
@@ -155,6 +178,11 @@ struct VaccineDetailsMomView: View {
             columnHeaders
 
             VStack(spacing: 0) {
+                if isLoading {
+                    ProgressView()
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 18)
+                }
                 ForEach(vaccines) { row in
                     vaccineRow(row)
                     Divider().opacity(0.25)
@@ -216,13 +244,91 @@ struct VaccineDetailsMomView: View {
         let trimmedDosage = dosage.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedName.isEmpty, !trimmedDosage.isEmpty else { return }
 
-        vaccines.insert(
-            VaccineRow(dateText: "Today", name: trimmedName, dosage: trimmedDosage),
-            at: 0
-        )
+        guard let session, let momUserId else {
+            vaccines.insert(
+                VaccineRow(dateText: "Today", name: trimmedName, dosage: trimmedDosage),
+                at: 0
+            )
+            vaccineName = ""
+            dosage = ""
+            return
+        }
 
-        vaccineName = ""
-        dosage = ""
+        isLoading = true
+        Task {
+            defer { isLoading = false }
+            do {
+                let todayISO = isoDate(Date())
+                try await VaccineRecordsRepository().insertRecord(
+                    momUserId: momUserId,
+                    createdByUserId: session.userId,
+                    vaccineName: trimmedName,
+                    dosage: trimmedDosage,
+                    administeredOnISO: todayISO,
+                    accessToken: session.accessToken
+                )
+
+                vaccineName = ""
+                dosage = ""
+
+                try await reloadRecords(momUserId: momUserId, accessToken: session.accessToken)
+            } catch SupabaseServiceError.httpError(let status, let body) {
+                errorMessage = "Save failed (\(status)): \(SupabaseAuthService.humanMessage(fromBody: body))"
+            } catch {
+                errorMessage = "Save failed: \(error.localizedDescription)"
+            }
+        }
+    }
+
+    private func loadFromDatabaseIfPossible() {
+        guard let session, let momUserId else { return }
+        vaccines = []
+        isLoading = true
+        Task {
+            defer { isLoading = false }
+            do {
+                try await reloadRecords(momUserId: momUserId, accessToken: session.accessToken)
+            } catch SupabaseServiceError.httpError(let status, let body) {
+                errorMessage = "Load failed (\(status)): \(SupabaseAuthService.humanMessage(fromBody: body))"
+            } catch {
+                errorMessage = "Load failed: \(error.localizedDescription)"
+            }
+        }
+    }
+
+    private func reloadRecords(momUserId: UUID, accessToken: String) async throws {
+        let records = try await VaccineRecordsRepository().fetchRecords(momUserId: momUserId, accessToken: accessToken)
+        vaccines = records.map {
+            VaccineRow(
+                id: $0.id,
+                dateText: displayDate(iso: $0.administeredOn),
+                name: $0.vaccineName,
+                dosage: $0.dosage
+            )
+        }
+    }
+
+    private func isoDate(_ date: Date) -> String {
+        let df = DateFormatter()
+        df.locale = Locale(identifier: "en_US_POSIX")
+        df.timeZone = TimeZone(secondsFromGMT: 0)
+        df.dateFormat = "yyyy-MM-dd"
+        return df.string(from: date)
+    }
+
+    private func displayDate(iso: String) -> String {
+        let df = DateFormatter()
+        df.locale = Locale(identifier: "en_US_POSIX")
+        df.timeZone = TimeZone(secondsFromGMT: 0)
+        df.dateFormat = "yyyy-MM-dd"
+
+        let out = DateFormatter()
+        out.locale = Locale(identifier: "en_US_POSIX")
+        out.dateFormat = "dd MMMM"
+
+        guard let date = df.date(from: iso) else { return iso }
+        if Calendar.current.isDateInToday(date) { return "Today" }
+        return out.string(from: date)
     }
 }
 
