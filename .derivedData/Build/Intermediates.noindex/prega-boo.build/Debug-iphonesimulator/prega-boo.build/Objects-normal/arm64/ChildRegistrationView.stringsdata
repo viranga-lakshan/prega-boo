@@ -1,0 +1,32 @@
+{
+  "source": "/Users/cobsccomp242p-068/prega-boo/prega-boo/View/ChildRegistrationView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Error",
+        "location": {
+          "startingColumn": 13,
+          "startingLine": 90
+        }
+      },
+      {
+        "comment": "",
+        "key": "OK",
+        "location": {
+          "startingColumn": 20,
+          "startingLine": 96
+        }
+      },
+      {
+        "comment": "",
+        "key": "",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 153
+        }
+      }
+    ]
+  },
+  "version": 1
+}

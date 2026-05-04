@@ -1,0 +1,112 @@
+{
+  "source": "/Users/cobsccomp242p-068/prega-boo/prega-boo/View/ClinicVisitDetailsMomView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Error",
+        "location": {
+          "startingColumn": 13,
+          "startingLine": 69
+        }
+      },
+      {
+        "comment": "",
+        "key": "OK",
+        "location": {
+          "startingColumn": 20,
+          "startingLine": 75
+        }
+      },
+      {
+        "comment": "",
+        "key": "NEXT APPOINTMENT",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 93
+        }
+      },
+      {
+        "comment": "",
+        "key": "HISTORY",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 108
+        }
+      },
+      {
+        "comment": "",
+        "key": "No past visits on file yet.",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 115
+        }
+      },
+      {
+        "comment": "",
+        "key": "Your care team",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 188
+        }
+      },
+      {
+        "comment": "",
+        "key": "Visit details are kept in your Health Passport. Ask your clinic if you need the exact provider or location.",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 191
+        }
+      },
+      {
+        "comment": "",
+        "key": "No upcoming visit",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 210
+        }
+      },
+      {
+        "comment": "",
+        "key": "There isn’t a future clinic visit on file. Past visits appear below.",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 213
+        }
+      },
+      {
+        "comment": "",
+        "key": "%@ · Completed visit",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 244
+        }
+      },
+      {
+        "comment": "",
+        "key": "",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 365
+        }
+      },
+      {
+        "comment": "",
+        "key": ":",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 419
+        }
+      },
+      {
+        "comment": "",
+        "key": "No visits yet",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 479
+        }
+      }
+    ]
+  },
+  "version": 1
+}

@@ -2,13 +2,47 @@ import SwiftUI
 
 struct BabyDetailsView: View {
     let model: BabyDetailsModel
+    let session: AuthSessionContext?
+    let child: ChildProfile?
+
+    init(model: BabyDetailsModel, session: AuthSessionContext? = nil, child: ChildProfile? = nil) {
+        self.model = model
+        self.session = session
+        self.child = child
+    }
 
     @Environment(\.dismiss) private var dismiss
+
+    @State private var showVaccineDetails = false
+    @State private var showClinicVisitDetails = false
+    @State private var showGrowthTracking = false
+
+    @State private var latestWeight: String?
+    @State private var latestHeight: String?
 
     private let actionColumns = [
         GridItem(.flexible(), spacing: 16),
         GridItem(.flexible(), spacing: 16)
     ]
+
+    private var subtitleText: String {
+        if let child {
+            let age = MomHealthAgeFormatting.ageLabelFromBirth(iso: child.birthDate)
+            return "\(age) • Healthy growth tracking"
+        }
+        return model.subtitle
+    }
+
+    private var metricsToShow: [BabyMetric] {
+        if let w = latestWeight, let h = latestHeight {
+            return [
+                BabyMetric(title: "WEIGHT", value: w, unit: "kg"),
+                BabyMetric(title: "HEIGHT", value: h, unit: "cm"),
+                BabyMetric(title: "SLEEP", value: "—", unit: "hrs")
+            ]
+        }
+        return model.metrics
+    }
 
     var body: some View {
         ZStack {
@@ -41,6 +75,77 @@ struct BabyDetailsView: View {
             }
         }
         .navigationBarBackButtonHidden(true)
+        .task { await loadLatestGrowth() }
+        .background(
+            NavigationLink(
+                destination: Group {
+                    if let session, let child {
+                        VaccineDetailsMomView(
+                            model: VaccineDetailsMomController().loadModel(),
+                            session: session,
+                            momUserId: nil,
+                            childId: child.id,
+                            mode: .momReadOnly
+                        )
+                    } else { EmptyView() }
+                },
+                isActive: $showVaccineDetails
+            ) { EmptyView() }
+        )
+        .background(
+            NavigationLink(
+                destination: Group {
+                    if let session, let child {
+                        ClinicVisitDetailsMomView(
+                            model: ClinicVisitDetailsMomController().loadModel(),
+                            session: session,
+                            momUserId: nil,
+                            childId: child.id,
+                            mode: .momReadOnly
+                        )
+                    } else { EmptyView() }
+                },
+                isActive: $showClinicVisitDetails
+            ) { EmptyView() }
+        )
+        .background(
+            NavigationLink(
+                destination: Group {
+                    if let session, let child {
+                        GrowthTrackingMomView(
+                            model: GrowthTrackingMomController().loadModel(),
+                            session: session,
+                            momUserId: nil,
+                            childId: child.id,
+                            mode: .momReadOnly,
+                            ageHeadline: MomHealthAgeFormatting.ageLabelFromBirth(iso: child.birthDate)
+                        )
+                    } else { EmptyView() }
+                },
+                isActive: $showGrowthTracking
+            ) { EmptyView() }
+        )
+    }
+
+    private func loadLatestGrowth() async {
+        guard let session, let child else { return }
+        do {
+            let recs = try await ChildGrowthRecordsRepository().fetchRecords(
+                childId: child.id,
+                accessToken: session.accessToken
+            )
+            let sorted = recs.sorted { $0.measuredOn > $1.measuredOn }
+            guard let g = sorted.first else { return }
+            await MainActor.run {
+                latestWeight = String(format: "%.1f", g.weightKg)
+                latestHeight = String(format: "%.1f", g.heightCm)
+            }
+        } catch {
+            await MainActor.run {
+                latestWeight = nil
+                latestHeight = nil
+            }
+        }
     }
 
     private var topBar: some View {
@@ -108,7 +213,7 @@ struct BabyDetailsView: View {
                 .font(.system(size: 28, weight: .bold, design: .rounded))
                 .foregroundStyle(Color.black.opacity(0.75))
 
-            Text(model.subtitle)
+            Text(subtitleText)
                 .font(.system(size: 13))
                 .foregroundStyle(Color.black.opacity(0.45))
         }
@@ -117,7 +222,7 @@ struct BabyDetailsView: View {
 
     private var metricsRow: some View {
         HStack(spacing: 12) {
-            ForEach(Array(model.metrics.enumerated()), id: \.offset) { _, metric in
+            ForEach(Array(metricsToShow.enumerated()), id: \.offset) { _, metric in
                 metricCard(metric)
             }
         }
@@ -146,7 +251,15 @@ struct BabyDetailsView: View {
     }
 
     private func quickActionCard(_ action: MomAndBabyQuickAction) -> some View {
-        Button(action: {}) {
+        Button(action: {
+            guard session != nil, child != nil else { return }
+            switch action.title {
+            case "Growth": showGrowthTracking = true
+            case "Vaccine": showVaccineDetails = true
+            case "Schedule": showClinicVisitDetails = true
+            default: break
+            }
+        }) {
             VStack(alignment: .leading, spacing: 10) {
                 ZStack {
                     RoundedRectangle(cornerRadius: 16, style: .continuous)

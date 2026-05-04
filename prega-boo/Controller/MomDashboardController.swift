@@ -1,6 +1,24 @@
 import SwiftUI
 
+struct MomProfileDisplayModel {
+    let title: String
+    let subtitle: String
+    let personalSectionTitle: String
+    let securitySectionTitle: String
+    let signOutTitle: String
+}
+
 final class MomDashboardController {
+    func loadProfileDisplayModel() -> MomProfileDisplayModel {
+        MomProfileDisplayModel(
+            title: "Mom Profile",
+            subtitle: "Your details and app security",
+            personalSectionTitle: "Personal",
+            securitySectionTitle: "App lock",
+            signOutTitle: "Sign out"
+        )
+    }
+
     func loadModel() -> MomDashboardModel {
         MomDashboardModel(
             backgroundColor: Color(red: 1.0, green: 0.97, blue: 0.97),

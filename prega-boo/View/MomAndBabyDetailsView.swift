@@ -5,6 +5,8 @@ struct MomAndBabyDetailsView: View {
     let session: AuthSessionContext?
     let mom: MomListRow?
 
+    @EnvironmentObject private var momSession: MomSessionStore
+
     init(model: MomAndBabyDetailsModel, session: AuthSessionContext? = nil, mom: MomListRow? = nil) {
         self.model = model
         self.session = session
@@ -13,12 +15,24 @@ struct MomAndBabyDetailsView: View {
 
     @Environment(\.dismiss) private var dismiss
 
-    @State private var selectedBaby: BabySummary?
+    @State private var selectedBaby: ChildProfile?
     @State private var showBabyDetails = false
 
     @State private var showVaccineDetails = false
     @State private var showClinicVisitDetails = false
     @State private var showGrowthTracking = false
+
+    @State private var momProfile: MomProfile?
+    @State private var children: [ChildProfile] = []
+    @State private var isLoadingHub = false
+
+    private var effectiveSession: AuthSessionContext? {
+        session ?? momSession.session
+    }
+
+    private var effectiveMomUserId: UUID? {
+        mom?.userId ?? effectiveSession?.userId
+    }
 
     private let columns = [
         GridItem(.flexible(), spacing: 16),
@@ -59,11 +73,16 @@ struct MomAndBabyDetailsView: View {
             }
         }
         .navigationBarBackButtonHidden(true)
+        .task { await loadHub() }
         .background(
             NavigationLink(
                 destination: Group {
-                    if let selectedBaby {
-                        BabyDetailsView(model: BabyDetailsController().loadModel(babyName: selectedBaby.name))
+                    if let selectedBaby, let s = effectiveSession {
+                        BabyDetailsView(
+                            model: BabyDetailsController().loadModel(babyName: selectedBaby.fullName),
+                            session: s,
+                            child: selectedBaby
+                        )
                     } else {
                         EmptyView()
                     }
@@ -77,8 +96,10 @@ struct MomAndBabyDetailsView: View {
             NavigationLink(
                 destination: VaccineDetailsMomView(
                     model: VaccineDetailsMomController().loadModel(),
-                    session: session,
-                    momUserId: mom?.userId
+                    session: effectiveSession,
+                    momUserId: effectiveMomUserId,
+                    childId: nil,
+                    mode: .momReadOnly
                 ),
                 isActive: $showVaccineDetails
             ) {
@@ -89,8 +110,10 @@ struct MomAndBabyDetailsView: View {
             NavigationLink(
                 destination: ClinicVisitDetailsMomView(
                     model: ClinicVisitDetailsMomController().loadModel(),
-                    session: session,
-                    momUserId: mom?.userId
+                    session: effectiveSession,
+                    momUserId: effectiveMomUserId,
+                    childId: nil,
+                    mode: .momReadOnly
                 ),
                 isActive: $showClinicVisitDetails
             ) {
@@ -101,14 +124,48 @@ struct MomAndBabyDetailsView: View {
             NavigationLink(
                 destination: GrowthTrackingMomView(
                     model: GrowthTrackingMomController().loadModel(),
-                    session: session,
-                    momUserId: mom?.userId
+                    session: effectiveSession,
+                    momUserId: effectiveMomUserId,
+                    childId: nil,
+                    mode: .momReadOnly,
+                    ageHeadline: nil
                 ),
                 isActive: $showGrowthTracking
             ) {
                 EmptyView()
             }
         )
+    }
+
+    private func loadHub() async {
+        guard let s = effectiveSession else { return }
+        isLoadingHub = true
+        defer { isLoadingHub = false }
+        do {
+            async let profile = MomProfileRepository().fetchOwnProfile(userId: s.userId, accessToken: s.accessToken)
+            async let kids = ChildProfilesRepository().fetchChildren(momUserId: s.userId, accessToken: s.accessToken)
+            let (p, c) = try await (profile, kids)
+            momProfile = p
+            children = c
+        } catch {
+            children = []
+        }
+    }
+
+    private var displayProfileName: String {
+        if let name = momProfile?.fullName, !name.isEmpty {
+            return name.replacingOccurrences(of: " ", with: "\n")
+        }
+        return model.profileName
+    }
+
+    private var displayProfileSubtitle: String {
+        if let district = momProfile?.district, !district.isEmpty {
+            let count = children.count
+            let babies = count == 1 ? "1 child" : "\(count) children"
+            return "\(babies) • \(district)"
+        }
+        return model.profileSubtitle
     }
 
     private var topBar: some View {
@@ -162,14 +219,18 @@ struct MomAndBabyDetailsView: View {
                     .offset(x: 40, y: 34)
             }
 
-            Text(model.profileName)
+            Text(displayProfileName)
                 .font(.system(size: 22, weight: .bold, design: .rounded))
                 .multilineTextAlignment(.center)
                 .foregroundStyle(Color.black.opacity(0.75))
 
-            Text(model.profileSubtitle)
+            Text(displayProfileSubtitle)
                 .font(.system(size: 13, weight: .regular))
                 .foregroundStyle(Color.black.opacity(0.45))
+
+            if isLoadingHub {
+                ProgressView().padding(.top, 6)
+            }
 
             HStack(spacing: 14) {
                 ForEach(Array(model.stats.enumerated()), id: \.offset) { _, stat in
@@ -250,13 +311,19 @@ struct MomAndBabyDetailsView: View {
                     .frame(width: 44, height: 44)
             }
 
+            if children.isEmpty, !isLoadingHub {
+                Text("No baby profiles yet. Your midwife can add them, or complete child registration.")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundStyle(Color.black.opacity(0.45))
+            }
+
             VStack(spacing: 14) {
-                ForEach(Array(model.babies.enumerated()), id: \.offset) { _, baby in
+                ForEach(children) { child in
                     Button(action: {
-                        selectedBaby = baby
+                        selectedBaby = child
                         showBabyDetails = true
                     }) {
-                        babyRow(baby)
+                        babyRow(child)
                     }
                 }
             }
@@ -266,7 +333,7 @@ struct MomAndBabyDetailsView: View {
         .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
     }
 
-    private func babyRow(_ baby: BabySummary) -> some View {
+    private func babyRow(_ child: ChildProfile) -> some View {
         HStack(spacing: 12) {
             ZStack {
                 Circle()
@@ -279,18 +346,18 @@ struct MomAndBabyDetailsView: View {
             }
 
             VStack(alignment: .leading, spacing: 2) {
-                Text(baby.name)
+                Text(child.fullName)
                     .font(.system(size: 16, weight: .bold, design: .rounded))
                     .foregroundStyle(Color.black.opacity(0.72))
 
-                Text(baby.ageText)
+                Text(MomHealthAgeFormatting.ageLabelFromBirth(iso: child.birthDate))
                     .font(.system(size: 12))
                     .foregroundStyle(Color.black.opacity(0.45))
             }
 
             Spacer()
 
-            Text(baby.statusText)
+            Text("View")
                 .font(.system(size: 14, weight: .bold))
                 .foregroundStyle(model.accentColor)
         }
@@ -301,5 +368,6 @@ struct MomAndBabyDetailsView: View {
 #Preview {
     NavigationStack {
         MomAndBabyDetailsView(model: MomAndBabyDetailsController().loadModel())
+            .environmentObject(MomSessionStore.shared)
     }
 }

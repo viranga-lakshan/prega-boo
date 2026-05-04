@@ -1,0 +1,2 @@
+Target dependency graph (1 target)
+Target 'prega-boo' in project 'prega-boo' (no dependencies)

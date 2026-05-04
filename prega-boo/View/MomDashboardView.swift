@@ -1,8 +1,20 @@
 import SwiftUI
 
+private enum MomDashboardTab: Hashable {
+    case home
+    case map
+    case track
+    case profile
+}
+
 struct MomDashboardView: View {
     let model: MomDashboardModel
 
+    @EnvironmentObject private var appLock: AppLockManager
+    @EnvironmentObject private var momSession: MomSessionStore
+    @Environment(\.scenePhase) private var scenePhase
+
+    @State private var selectedTab: MomDashboardTab = .home
     @State private var showMomAndBabyDetails = false
 
     var body: some View {
@@ -11,53 +23,111 @@ struct MomDashboardView: View {
                 .ignoresSafeArea()
 
             VStack(spacing: 0) {
-                header
-                    .padding(.horizontal, 18)
-                    .padding(.top, 8)
-
-                Spacer().frame(height: 10)
-
-                ScrollView(showsIndicators: false) {
-                    VStack(alignment: .leading, spacing: 18) {
-                        VStack(alignment: .leading, spacing: 10) {
-                            Text(model.title)
-                                .font(.system(size: 40, weight: .bold, design: .rounded))
-                                .foregroundStyle(Color.black.opacity(0.78))
-
-                            Text(model.subtitle)
-                                .font(.system(size: 18, weight: .regular))
-                                .foregroundStyle(Color.black.opacity(0.5))
-                        }
-                        .padding(.horizontal, 18)
-
-                        insightsCard
-                            .padding(.horizontal, 18)
-
-                        VStack(spacing: 14) {
-                            ForEach(Array(model.menuItems.enumerated()), id: \.offset) { _, item in
-                                menuRow(item)
-                            }
-                        }
-                        .padding(.horizontal, 18)
-                        .padding(.top, 8)
-                        .padding(.bottom, 20)
+                Group {
+                    switch selectedTab {
+                    case .home:
+                        homeContent
+                    case .map:
+                        CareFinderView(accentColor: model.accentColor)
+                    case .track:
+                        dashboardPlaceholder(
+                            title: "Track",
+                            message: "Appointments and milestones will appear here."
+                        )
+                    case .profile:
+                        MomProfileView(
+                            dashboardModel: model,
+                            profileCopy: MomDashboardController().loadProfileDisplayModel()
+                        )
                     }
                 }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
 
                 bottomTabs
                     .padding(.horizontal, 18)
                     .padding(.bottom, 14)
             }
+
+            if appLock.isLocked {
+                AppLockScreenView(accentColor: model.accentColor)
+                    .transition(.opacity)
+                    .zIndex(2)
+            }
         }
         .navigationBarBackButtonHidden(true)
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .background {
+                appLock.sceneDidEnterBackground()
+            }
+        }
         .background(
             NavigationLink(
-                destination: MomAndBabyDetailsView(model: MomAndBabyDetailsController().loadModel()),
+                destination: MomAndBabyDetailsView(
+                    model: MomAndBabyDetailsController().loadModel(),
+                    session: momSession.session,
+                    mom: nil
+                ),
                 isActive: $showMomAndBabyDetails
             ) {
                 EmptyView()
             }
         )
+    }
+
+    private var homeContent: some View {
+        VStack(spacing: 0) {
+            header
+                .padding(.horizontal, 18)
+                .padding(.top, 8)
+
+            Spacer().frame(height: 10)
+
+            ScrollView(showsIndicators: false) {
+                VStack(alignment: .leading, spacing: 18) {
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text(model.title)
+                            .font(.system(size: 40, weight: .bold, design: .rounded))
+                            .foregroundStyle(Color.black.opacity(0.78))
+
+                        Text(model.subtitle)
+                            .font(.system(size: 18, weight: .regular))
+                            .foregroundStyle(Color.black.opacity(0.5))
+                    }
+                    .padding(.horizontal, 18)
+
+                    insightsCard
+                        .padding(.horizontal, 18)
+
+                    VStack(spacing: 14) {
+                        ForEach(Array(model.menuItems.enumerated()), id: \.offset) { _, item in
+                            menuRow(item)
+                        }
+                    }
+                    .padding(.horizontal, 18)
+                    .padding(.top, 8)
+                    .padding(.bottom, 20)
+                }
+            }
+        }
+    }
+
+    private func dashboardPlaceholder(title: String, message: String) -> some View {
+        VStack(spacing: 16) {
+            Spacer()
+            Image(systemName: "sparkles")
+                .font(.system(size: 40, weight: .bold))
+                .foregroundStyle(model.accentColor)
+            Text(title)
+                .font(.system(size: 28, weight: .bold, design: .rounded))
+                .foregroundStyle(Color.black.opacity(0.78))
+            Text(message)
+                .font(.system(size: 16, weight: .medium))
+                .foregroundStyle(Color.black.opacity(0.45))
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 32)
+            Spacer()
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
     private var header: some View {
@@ -169,6 +239,8 @@ struct MomDashboardView: View {
         Button(action: {
             if item.title == "Mom & Babies Details" {
                 showMomAndBabyDetails = true
+            } else if item.title == "Hospitals" {
+                selectedTab = .map
             }
         }) {
             HStack(spacing: 14) {
@@ -207,30 +279,43 @@ struct MomDashboardView: View {
 
     private var bottomTabs: some View {
         HStack(spacing: 0) {
-            tabItem(title: "Home", systemImage: "house.fill", isActive: true)
-            tabItem(title: "Map", systemImage: "map", isActive: false)
-            tabItem(title: "Track", systemImage: "calendar", isActive: false)
-            tabItem(title: "Profile", systemImage: "person", isActive: false)
+            tabButton(tab: .home, title: "Home", systemImage: "house.fill")
+            tabButton(tab: .map, title: "Map", systemImage: "map")
+            tabButton(tab: .track, title: "Track", systemImage: "calendar")
+            tabButton(tab: .profile, title: "Profile", systemImage: "person")
         }
         .padding(.vertical, 12)
         .background(Color.white.opacity(0.85))
         .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
     }
 
-    private func tabItem(title: String, systemImage: String, isActive: Bool) -> some View {
-        VStack(spacing: 6) {
-            Image(systemName: systemImage)
-                .font(.system(size: 20, weight: .semibold))
-                .foregroundStyle(isActive ? model.accentColor : Color.black.opacity(0.35))
+    private func tabButton(tab: MomDashboardTab, title: String, systemImage: String) -> some View {
+        Button {
+            selectedTab = tab
+        } label: {
+            VStack(spacing: 6) {
+                Image(systemName: systemImage)
+                    .font(.system(size: 20, weight: .semibold))
+                    .foregroundStyle(selectedTab == tab ? model.accentColor : Color.black.opacity(0.35))
 
-            Text(title)
-                .font(.system(size: 12, weight: .semibold))
-                .foregroundStyle(isActive ? model.accentColor : Color.black.opacity(0.35))
+                Text(title)
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(selectedTab == tab ? model.accentColor : Color.black.opacity(0.35))
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 8)
+            .padding(.horizontal, 4)
+            .background(
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .fill(selectedTab == tab ? model.accentColor.opacity(0.14) : Color.clear)
+            )
         }
-        .frame(maxWidth: .infinity)
+        .buttonStyle(.plain)
     }
 }
 
 #Preview {
     MomDashboardView(model: MomDashboardController().loadModel())
+        .environmentObject(MomSessionStore.shared)
+        .environmentObject(AppLockManager.shared)
 }

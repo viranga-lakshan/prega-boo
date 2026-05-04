@@ -179,6 +179,11 @@ struct ExpectingBabyLoginView: View {
                     return
                 }
 
+                await MainActor.run {
+                    MomSessionStore.shared.setSession(
+                        AuthSessionContext(userId: session.user.id, accessToken: session.accessToken)
+                    )
+                }
                 goToDashboard = true
             } catch let authError as SupabaseAuthError {
                 switch authError {

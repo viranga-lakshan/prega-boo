@@ -1,0 +1,40 @@
+{
+  "source": "/Users/cobsccomp242p-068/prega-boo/prega-boo/View/MidwifeLoginView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Error",
+        "location": {
+          "startingColumn": 13,
+          "startingLine": 38
+        }
+      },
+      {
+        "comment": "",
+        "key": "OK",
+        "location": {
+          "startingColumn": 20,
+          "startingLine": 44
+        }
+      },
+      {
+        "comment": "",
+        "key": "No account?",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 128
+        }
+      },
+      {
+        "comment": "",
+        "key": "Sign up",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 135
+        }
+      }
+    ]
+  },
+  "version": 1
+}

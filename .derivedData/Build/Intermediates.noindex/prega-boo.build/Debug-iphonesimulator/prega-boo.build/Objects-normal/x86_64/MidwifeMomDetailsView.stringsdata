@@ -1,0 +1,64 @@
+{
+  "source": "/Users/cobsccomp242p-068/prega-boo/prega-boo/View/MidwifeMomDetailsView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Error",
+        "location": {
+          "startingColumn": 13,
+          "startingLine": 91
+        }
+      },
+      {
+        "comment": "",
+        "key": "Managing healthcare journeys for the %@ family since 2021.",
+        "location": {
+          "startingColumn": 14,
+          "startingLine": 144
+        }
+      },
+      {
+        "comment": "",
+        "key": "OK",
+        "location": {
+          "startingColumn": 20,
+          "startingLine": 97
+        }
+      },
+      {
+        "comment": "",
+        "key": "No children added yet.",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 217
+        }
+      },
+      {
+        "comment": "",
+        "key": "%lld Total",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 203
+        }
+      },
+      {
+        "comment": "",
+        "key": "Born %@",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 259
+        }
+      },
+      {
+        "comment": "",
+        "key": "2021",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 284
+        }
+      }
+    ]
+  },
+  "version": 1
+}

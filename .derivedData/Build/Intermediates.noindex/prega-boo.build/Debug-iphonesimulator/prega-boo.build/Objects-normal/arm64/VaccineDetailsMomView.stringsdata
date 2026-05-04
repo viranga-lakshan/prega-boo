@@ -1,0 +1,112 @@
+{
+  "source": "/Users/cobsccomp242p-068/prega-boo/prega-boo/View/VaccineDetailsMomView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Error",
+        "location": {
+          "startingColumn": 13,
+          "startingLine": 55
+        }
+      },
+      {
+        "comment": "",
+        "key": "OK",
+        "location": {
+          "startingColumn": 20,
+          "startingLine": 61
+        }
+      },
+      {
+        "comment": "",
+        "key": "HEALTH PASSPORT",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 107
+        }
+      },
+      {
+        "comment": "",
+        "key": "A verified record of immunizations entered by your care team in Prega Boo.",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 115
+        }
+      },
+      {
+        "comment": "",
+        "key": "Vaccination History Mom",
+        "location": {
+          "startingColumn": 43,
+          "startingLine": 111
+        }
+      },
+      {
+        "comment": "",
+        "key": "Vaccination History Baby",
+        "location": {
+          "startingColumn": 71,
+          "startingLine": 111
+        }
+      },
+      {
+        "comment": "",
+        "key": "No doses on file yet",
+        "location": {
+          "startingColumn": 41,
+          "startingLine": 146
+        }
+      },
+      {
+        "comment": "",
+        "key": "Protection record",
+        "location": {
+          "startingColumn": 66,
+          "startingLine": 146
+        }
+      },
+      {
+        "comment": "",
+        "key": "When your midwife adds vaccines, they will appear here.",
+        "location": {
+          "startingColumn": 27,
+          "startingLine": 151
+        }
+      },
+      {
+        "comment": "",
+        "key": "You have %lld dose(s) recorded. Keep following your clinic schedule.",
+        "location": {
+          "startingColumn": 27,
+          "startingLine": 152
+        }
+      },
+      {
+        "comment": "",
+        "key": "TOTAL DOSES",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 169
+        }
+      },
+      {
+        "comment": "",
+        "key": "Recorded in Prega Boo by your care provider.",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 217
+        }
+      },
+      {
+        "comment": "",
+        "key": "•",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 205
+        }
+      }
+    ]
+  },
+  "version": 1
+}

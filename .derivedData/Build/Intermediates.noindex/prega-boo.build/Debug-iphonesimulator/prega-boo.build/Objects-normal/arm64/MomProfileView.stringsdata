@@ -1,0 +1,184 @@
+{
+  "source": "/Users/cobsccomp242p-068/prega-boo/prega-boo/View/MomProfileView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Profile",
+        "location": {
+          "startingColumn": 16,
+          "startingLine": 52
+        }
+      },
+      {
+        "comment": "",
+        "key": "Remove PIN?",
+        "location": {
+          "startingColumn": 29,
+          "startingLine": 60
+        }
+      },
+      {
+        "comment": "",
+        "key": "Sign out?",
+        "location": {
+          "startingColumn": 29,
+          "startingLine": 69
+        }
+      },
+      {
+        "comment": "",
+        "key": "OK",
+        "location": {
+          "startingColumn": 20,
+          "startingLine": 56
+        }
+      },
+      {
+        "comment": "",
+        "key": "Remove PIN & turn off lock",
+        "location": {
+          "startingColumn": 20,
+          "startingLine": 61
+        }
+      },
+      {
+        "comment": "",
+        "key": "Cancel",
+        "location": {
+          "startingColumn": 20,
+          "startingLine": 65
+        }
+      },
+      {
+        "comment": "",
+        "key": "You will need to set a PIN again to use app lock.",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 67
+        }
+      },
+      {
+        "comment": "",
+        "key": "Sign out",
+        "location": {
+          "startingColumn": 20,
+          "startingLine": 70
+        }
+      },
+      {
+        "comment": "",
+        "key": "Cancel",
+        "location": {
+          "startingColumn": 20,
+          "startingLine": 71
+        }
+      },
+      {
+        "comment": "",
+        "key": "Sign in to sync your profile from the clinic app.",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 112
+        }
+      },
+      {
+        "comment": "",
+        "key": "No profile row found yet. Complete registration or try refresh.",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 127
+        }
+      },
+      {
+        "comment": "",
+        "key": "Loading your profile…",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 105
+        }
+      },
+      {
+        "comment": "",
+        "key": "Lock when leaving app",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 159
+        }
+      },
+      {
+        "comment": "",
+        "key": "Ask for PIN (or Face ID) when you return from another app.",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 162
+        }
+      },
+      {
+        "comment": "",
+        "key": "Use %@",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 172
+        }
+      },
+      {
+        "comment": "",
+        "key": "Quick unlock when app lock is on. PIN always works as backup.",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 175
+        }
+      },
+      {
+        "comment": "",
+        "key": "Change PIN",
+        "location": {
+          "startingColumn": 59,
+          "startingLine": 191
+        }
+      },
+      {
+        "comment": "",
+        "key": "Set up 4-digit PIN",
+        "location": {
+          "startingColumn": 74,
+          "startingLine": 191
+        }
+      },
+      {
+        "comment": "",
+        "key": "Remove PIN",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 210
+        }
+      },
+      {
+        "comment": "",
+        "key": "Create a 4-digit PIN",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 320
+        }
+      },
+      {
+        "comment": "",
+        "key": "Confirm your PIN",
+        "location": {
+          "startingColumn": 59,
+          "startingLine": 320
+        }
+      },
+      {
+        "comment": "",
+        "key": "Cancel",
+        "location": {
+          "startingColumn": 28,
+          "startingLine": 365
+        }
+      }
+    ]
+  },
+  "version": 1
+}

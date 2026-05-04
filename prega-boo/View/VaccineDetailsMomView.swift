@@ -5,12 +5,20 @@ struct VaccineDetailsMomView: View {
     let session: AuthSessionContext?
     let momUserId: UUID?
     let childId: UUID?
+    let mode: HealthFeatureViewMode
 
-    init(model: VaccineDetailsMomModel, session: AuthSessionContext? = nil, momUserId: UUID? = nil, childId: UUID? = nil) {
+    init(
+        model: VaccineDetailsMomModel,
+        session: AuthSessionContext? = nil,
+        momUserId: UUID? = nil,
+        childId: UUID? = nil,
+        mode: HealthFeatureViewMode = .midwifeEntry
+    ) {
         self.model = model
         self.session = session
         self.momUserId = momUserId
         self.childId = childId
+        self.mode = mode
     }
 
     @Environment(\.dismiss) private var dismiss
@@ -21,12 +29,42 @@ struct VaccineDetailsMomView: View {
     @State private var isLoading = false
     @State private var errorMessage: String?
 
-    @State private var vaccines: [VaccineRow] = [
-        VaccineRow(dateText: "Today", name: "Rotavirus", dosage: "30mm"),
-        VaccineRow(dateText: "01 October", name: "MMR.", dosage: "20mm")
-    ]
+    @State private var vaccines: [VaccineRow] = []
+
+    private var deepMaroon: Color { Color(red: 0.45, green: 0.12, blue: 0.24) }
 
     var body: some View {
+        Group {
+            if mode == .momReadOnly {
+                momReadOnlyRoot
+            } else {
+                midwifeRoot
+            }
+        }
+        .navigationBarBackButtonHidden(true)
+        .onAppear {
+            if mode == .midwifeEntry, vaccines.isEmpty, session == nil {
+                vaccines = [
+                    VaccineRow(dateText: "Today", name: "Rotavirus", dosage: "Dose 1 • Oral"),
+                    VaccineRow(dateText: "01 October", name: "MMR", dosage: "Booster")
+                ]
+            }
+            loadFromDatabaseIfPossible()
+        }
+        .alert(
+            "Error",
+            isPresented: Binding(
+                get: { errorMessage != nil },
+                set: { newValue in if !newValue { errorMessage = nil } }
+            )
+        ) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(errorMessage ?? "")
+        }
+    }
+
+    private var midwifeRoot: some View {
         ZStack {
             model.backgroundColor
                 .ignoresSafeArea()
@@ -46,19 +84,166 @@ struct VaccineDetailsMomView: View {
                 .padding(.horizontal, 18)
             }
         }
-        .navigationBarBackButtonHidden(true)
-        .onAppear { loadFromDatabaseIfPossible() }
-        .alert(
-            "Error",
-            isPresented: Binding(
-                get: { errorMessage != nil },
-                set: { newValue in if !newValue { errorMessage = nil } }
-            )
-        ) {
-            Button("OK", role: .cancel) {}
-        } message: {
-            Text(errorMessage ?? "")
+    }
+
+    private var momReadOnlyRoot: some View {
+        ZStack {
+            Color(red: 0.99, green: 0.97, blue: 0.98)
+                .ignoresSafeArea()
+
+            ScrollView(showsIndicators: false) {
+                VStack(alignment: .leading, spacing: 18) {
+                    HStack {
+                        Button(action: { dismiss() }) {
+                            Image(systemName: "chevron.left")
+                                .font(.system(size: 18, weight: .semibold))
+                                .foregroundStyle(deepMaroon)
+                                .frame(width: 44, height: 44)
+                        }
+                        Spacer()
+                    }
+                    .padding(.top, 8)
+
+                    Text("HEALTH PASSPORT")
+                        .font(.system(size: 11, weight: .bold))
+                        .foregroundStyle(model.accentColor)
+
+                    Text(childId == nil ? "Vaccination History Mom" : "Vaccination History Baby")
+                        .font(.system(size: 28, weight: .bold, design: .rounded))
+                        .foregroundStyle(Color.black.opacity(0.82))
+
+                    Text("A verified record of immunizations entered by your care team in Prega Boo.")
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundStyle(Color.black.opacity(0.45))
+
+                    statusSummaryCard
+
+                    totalDosesCard
+
+                    if isLoading {
+                        ProgressView()
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                    }
+
+                    ForEach(vaccines) { v in
+                        momVaccineCard(v)
+                    }
+
+                    Spacer().frame(height: 24)
+                }
+                .padding(.horizontal, 18)
+            }
         }
+    }
+
+    private var statusSummaryCard: some View {
+        HStack(alignment: .top, spacing: 14) {
+            Image(systemName: "checkmark.shield.fill")
+                .font(.system(size: 26, weight: .semibold))
+                .foregroundStyle(deepMaroon)
+            VStack(alignment: .leading, spacing: 6) {
+                Text(vaccines.isEmpty ? "No doses on file yet" : "Protection record")
+                    .font(.system(size: 17, weight: .bold))
+                    .foregroundStyle(deepMaroon)
+                Text(
+                    vaccines.isEmpty
+                        ? "When your midwife adds vaccines, they will appear here."
+                        : "You have \(vaccines.count) dose(s) recorded. Keep following your clinic schedule."
+                )
+                .font(.system(size: 13, weight: .medium))
+                .foregroundStyle(Color.black.opacity(0.45))
+            }
+            Spacer(minLength: 0)
+        }
+        .padding(18)
+        .background(model.accentColor.opacity(0.14))
+        .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+    }
+
+    private var totalDosesCard: some View {
+        VStack(spacing: 8) {
+            Text(String(format: "%02d", vaccines.count))
+                .font(.system(size: 42, weight: .bold, design: .rounded))
+                .foregroundStyle(.white)
+            Text("TOTAL DOSES")
+                .font(.system(size: 12, weight: .bold))
+                .foregroundStyle(.white.opacity(0.9))
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 22)
+        .background(deepMaroon)
+        .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+    }
+
+    private func momVaccineCard(_ row: VaccineRow) -> some View {
+        let parts = doseAndRoute(from: row.dosage)
+        return VStack(alignment: .leading, spacing: 12) {
+            HStack(alignment: .top, spacing: 12) {
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .fill(model.accentColor.opacity(0.15))
+                    .frame(width: 48, height: 48)
+                    .overlay(
+                        Image(systemName: "syringe.fill")
+                            .foregroundStyle(deepMaroon)
+                    )
+
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(row.name)
+                        .font(.system(size: 17, weight: .bold, design: .rounded))
+                        .foregroundStyle(Color.black.opacity(0.82))
+
+                    HStack(spacing: 8) {
+                        Text(parts.doseTag)
+                            .font(.system(size: 11, weight: .bold))
+                            .foregroundStyle(model.accentColor)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 5)
+                            .background(model.accentColor.opacity(0.12))
+                            .clipShape(Capsule())
+
+                        Text("•")
+                            .foregroundStyle(Color.black.opacity(0.25))
+
+                        Text(parts.route)
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundStyle(Color.black.opacity(0.4))
+                    }
+
+                    Text(displayDateLongFromRow(row.dateText))
+                        .font(.system(size: 15, weight: .bold))
+                        .foregroundStyle(Color.black.opacity(0.78))
+
+                    Text("Recorded in Prega Boo by your care provider.")
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundStyle(Color.black.opacity(0.4))
+                }
+                Spacer(minLength: 0)
+            }
+        }
+        .padding(16)
+        .background(Color.white)
+        .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+        .shadow(color: Color.black.opacity(0.06), radius: 10, y: 4)
+    }
+
+    private func doseAndRoute(from dosage: String) -> (doseTag: String, route: String) {
+        let lower = dosage.lowercased()
+        let route: String
+        if lower.contains("oral") { route = "Oral" }
+        else if lower.contains("im") || lower.contains("intramuscular") { route = "Intramuscular" }
+        else if lower.contains("injection") { route = "Injection" }
+        else { route = "As recorded" }
+
+        if dosage.localizedCaseInsensitiveContains("dose") || dosage.localizedCaseInsensitiveContains("booster") {
+            return (dosage, route)
+        }
+        return ("Dose recorded", route)
+    }
+
+    /// Row date is already formatted; keep readable.
+    private func displayDateLongFromRow(_ dateText: String) -> String {
+        dateText
     }
 
     private var topBar: some View {
@@ -345,7 +530,7 @@ struct VaccineDetailsMomView: View {
         vaccines = records.map {
             VaccineRow(
                 id: $0.id,
-                dateText: displayDate(iso: $0.administeredOn),
+                dateText: displayDateMedium(iso: $0.administeredOn),
                 name: $0.vaccineName,
                 dosage: $0.dosage
             )
@@ -357,7 +542,7 @@ struct VaccineDetailsMomView: View {
         vaccines = records.map {
             VaccineRow(
                 id: $0.id,
-                dateText: displayDate(iso: $0.administeredOn),
+                dateText: displayDateMedium(iso: $0.administeredOn),
                 name: $0.vaccineName,
                 dosage: $0.dosage
             )
@@ -384,6 +569,18 @@ struct VaccineDetailsMomView: View {
 
         guard let date = df.date(from: iso) else { return iso }
         if Calendar.current.isDateInToday(date) { return "Today" }
+        return out.string(from: date)
+    }
+
+    private func displayDateMedium(iso: String) -> String {
+        let df = DateFormatter()
+        df.locale = Locale(identifier: "en_US_POSIX")
+        df.timeZone = TimeZone(secondsFromGMT: 0)
+        df.dateFormat = "yyyy-MM-dd"
+        let out = DateFormatter()
+        out.locale = Locale(identifier: "en_US_POSIX")
+        out.dateFormat = "MMM d, yyyy"
+        guard let date = df.date(from: iso) else { return iso }
         return out.string(from: date)
     }
 }

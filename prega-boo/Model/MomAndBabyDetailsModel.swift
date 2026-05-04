@@ -12,10 +12,18 @@ struct MomAndBabyQuickAction {
     let backgroundColor: Color
 }
 
-struct BabySummary {
+struct BabySummary: Identifiable, Hashable {
+    let id: UUID
     let name: String
     let ageText: String
     let statusText: String
+
+    init(id: UUID, name: String, ageText: String, statusText: String) {
+        self.id = id
+        self.name = name
+        self.ageText = ageText
+        self.statusText = statusText
+    }
 }
 
 struct MomAndBabyDetailsModel {

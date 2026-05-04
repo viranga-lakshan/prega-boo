@@ -98,6 +98,14 @@ struct DueDateInputView: View {
                     try await MomProfileRepository().upsert(profile: profile, accessToken: registration.accessToken)
                 }
 
+                if let registration {
+                    await MainActor.run {
+                        MomSessionStore.shared.setSession(
+                            AuthSessionContext(userId: registration.userId, accessToken: registration.accessToken)
+                        )
+                    }
+                }
+
                 goToDashboard = true
             } catch SupabaseServiceError.httpError(let status, let body) {
                 errorMessage = "Failed to save due date (\(status)): \(SupabaseAuthService.humanMessage(fromBody: body))"

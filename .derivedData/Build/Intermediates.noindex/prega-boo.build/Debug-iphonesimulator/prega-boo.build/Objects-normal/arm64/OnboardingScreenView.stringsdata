@@ -1,0 +1,24 @@
+{
+  "source": "/Users/cobsccomp242p-068/prega-boo/prega-boo/View/OnboardingScreenView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "SKIP",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 67
+        }
+      },
+      {
+        "comment": "",
+        "key": "NEXT",
+        "location": {
+          "startingColumn": 24,
+          "startingLine": 83
+        }
+      }
+    ]
+  },
+  "version": 1
+}

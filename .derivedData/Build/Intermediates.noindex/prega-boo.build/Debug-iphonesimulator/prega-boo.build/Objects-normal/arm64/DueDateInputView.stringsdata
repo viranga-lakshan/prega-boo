@@ -1,0 +1,32 @@
+{
+  "source": "/Users/cobsccomp242p-068/prega-boo/prega-boo/View/DueDateInputView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Error",
+        "location": {
+          "startingColumn": 13,
+          "startingLine": 62
+        }
+      },
+      {
+        "comment": "",
+        "key": "",
+        "location": {
+          "startingColumn": 13,
+          "startingLine": 153
+        }
+      },
+      {
+        "comment": "",
+        "key": "OK",
+        "location": {
+          "startingColumn": 20,
+          "startingLine": 68
+        }
+      }
+    ]
+  },
+  "version": 1
+}

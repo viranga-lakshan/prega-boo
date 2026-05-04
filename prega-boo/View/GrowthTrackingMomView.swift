@@ -6,12 +6,23 @@ struct GrowthTrackingMomView: View {
     let session: AuthSessionContext?
     let momUserId: UUID?
     let childId: UUID?
+    let mode: HealthFeatureViewMode
+    let ageHeadline: String?
 
-    init(model: GrowthTrackingMomModel, session: AuthSessionContext? = nil, momUserId: UUID? = nil, childId: UUID? = nil) {
+    init(
+        model: GrowthTrackingMomModel,
+        session: AuthSessionContext? = nil,
+        momUserId: UUID? = nil,
+        childId: UUID? = nil,
+        mode: HealthFeatureViewMode = .midwifeEntry,
+        ageHeadline: String? = nil
+    ) {
         self.model = model
         self.session = session
         self.momUserId = momUserId
         self.childId = childId
+        self.mode = mode
+        self.ageHeadline = ageHeadline
     }
 
     @Environment(\.dismiss) private var dismiss
@@ -31,13 +42,42 @@ struct GrowthTrackingMomView: View {
         GrowthRow(dateText: "Yesterday", weightText: "3.1", heightText: "50", notesPreview: "")
     ]
 
+    @State private var momGrowthSource: [GrowthRecord] = []
+    @State private var childGrowthSource: [ChildGrowthRecord] = []
+    @State private var curveShowsWeight = true
+
     private let milestones: [String] = [
         "First Smile",
         "Rolled Over",
         "Grasping"
     ]
 
+    private var deepAccent: Color { Color(red: 0.35, green: 0.18, blue: 0.42) }
+
     var body: some View {
+        Group {
+            if mode == .momReadOnly {
+                momReadOnlyRoot
+            } else {
+                midwifeRoot
+            }
+        }
+        .navigationBarBackButtonHidden(true)
+        .onAppear { loadFromDatabaseIfPossible() }
+        .alert(
+            "Error",
+            isPresented: Binding(
+                get: { errorMessage != nil },
+                set: { newValue in if !newValue { errorMessage = nil } }
+            )
+        ) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(errorMessage ?? "")
+        }
+    }
+
+    private var midwifeRoot: some View {
         ZStack {
             model.backgroundColor
                 .ignoresSafeArea()
@@ -71,18 +111,315 @@ struct GrowthTrackingMomView: View {
                 .padding(.horizontal, 18)
             }
         }
-        .navigationBarBackButtonHidden(true)
-        .onAppear { loadFromDatabaseIfPossible() }
-        .alert(
-            "Error",
-            isPresented: Binding(
-                get: { errorMessage != nil },
-                set: { newValue in if !newValue { errorMessage = nil } }
+    }
+
+    private var momReadOnlyRoot: some View {
+        ZStack {
+            Color(red: 0.99, green: 0.96, blue: 0.97)
+                .ignoresSafeArea()
+
+            ScrollView(showsIndicators: false) {
+                VStack(alignment: .leading, spacing: 20) {
+                    momReadOnlyTopBar
+                        .padding(.top, 8)
+
+                    momReadOnlyTitleBlock
+
+                    momReadOnlyMetricCards
+
+                    momReadOnlyGrowthCurveCard
+
+                    momReadOnlyMilestonesSection
+                        .padding(.bottom, 24)
+                }
+                .padding(.horizontal, 18)
+            }
+        }
+    }
+
+    private var momReadOnlyTopBar: some View {
+        HStack {
+            Button(action: { dismiss() }) {
+                Image(systemName: "chevron.left")
+                    .font(.system(size: 18, weight: .semibold))
+                    .foregroundStyle(deepAccent)
+                    .frame(width: 44, height: 44)
+            }
+            Spacer()
+        }
+    }
+
+    private var momReadOnlyTitleBlock: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(alignment: .firstTextBaseline) {
+                Text(childId == nil ? "Growth Tracking Mom" : "Growth Tracking Baby")
+                    .font(.system(size: 28, weight: .bold, design: .rounded))
+                    .foregroundStyle(deepAccent)
+                Spacer()
+                if let ageHeadline, !ageHeadline.isEmpty {
+                    Text(ageHeadline)
+                        .font(.system(size: 15, weight: .bold))
+                        .foregroundStyle(model.accentColor)
+                }
+            }
+            Text("Tracking growth and magical milestones since birth.")
+                .font(.system(size: 14, weight: .medium))
+                .foregroundStyle(Color.black.opacity(0.45))
+        }
+    }
+
+    private var momReadOnlyMetricCards: some View {
+        HStack(spacing: 12) {
+            momMetricCard(
+                icon: "scalemass.fill",
+                label: "CURRENT WEIGHT",
+                value: latestWeightDisplay,
+                delta: weightDeltaDisplay
             )
-        ) {
-            Button("OK", role: .cancel) {}
-        } message: {
-            Text(errorMessage ?? "")
+            momMetricCard(
+                icon: "ruler.fill",
+                label: "CURRENT HEIGHT",
+                value: latestHeightDisplay,
+                delta: heightDeltaDisplay
+            )
+        }
+    }
+
+    private func momMetricCard(icon: String, label: String, value: String, delta: String?) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Image(systemName: icon)
+                .font(.system(size: 18, weight: .semibold))
+                .foregroundStyle(deepAccent)
+            Text(label)
+                .font(.system(size: 10, weight: .bold))
+                .foregroundStyle(Color.black.opacity(0.4))
+            Text(value)
+                .font(.system(size: 22, weight: .bold, design: .rounded))
+                .foregroundStyle(Color.black.opacity(0.78))
+            if let delta, !delta.isEmpty {
+                HStack(spacing: 4) {
+                    Image(systemName: "arrow.up.right")
+                        .font(.system(size: 11, weight: .bold))
+                    Text(delta)
+                        .font(.system(size: 11, weight: .bold))
+                }
+                .foregroundStyle(model.accentColor)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 6)
+                .background(model.accentColor.opacity(0.14))
+                .clipShape(Capsule())
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(16)
+        .background(Color.white)
+        .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+        .shadow(color: Color.black.opacity(0.06), radius: 10, y: 4)
+    }
+
+    private var latestWeightDisplay: String {
+        guard let w = latestWeightValue else { return "—" }
+        return String(format: "%.1f kg", w)
+    }
+
+    private var latestHeightDisplay: String {
+        guard let h = latestHeightValue else { return "—" }
+        return String(format: "%.1f cm", h)
+    }
+
+    private var latestWeightValue: Double? {
+        if childId != nil {
+            return childGrowthSource.sorted { $0.measuredOn < $1.measuredOn }.last?.weightKg
+        }
+        return momGrowthSource.sorted { $0.measuredOn < $1.measuredOn }.last?.weightKg
+    }
+
+    private var latestHeightValue: Double? {
+        if childId != nil {
+            return childGrowthSource.sorted { $0.measuredOn < $1.measuredOn }.last?.heightCm
+        }
+        return momGrowthSource.sorted { $0.measuredOn < $1.measuredOn }.last?.heightCm
+    }
+
+    private var weightDeltaDisplay: String? {
+        let vals: [Double] = {
+            if childId != nil {
+                return childGrowthSource.sorted { $0.measuredOn < $1.measuredOn }.map { $0.weightKg }
+            }
+            return momGrowthSource.sorted { $0.measuredOn < $1.measuredOn }.map { $0.weightKg }
+        }()
+        guard vals.count >= 2, let a = vals.dropLast().last, let b = vals.last else { return nil }
+        let d = b - a
+        guard abs(d) > 0.001 else { return nil }
+        return String(format: "%+.1f kg", d)
+    }
+
+    private var heightDeltaDisplay: String? {
+        let vals: [Double] = {
+            if childId != nil {
+                return childGrowthSource.sorted { $0.measuredOn < $1.measuredOn }.map { $0.heightCm }
+            }
+            return momGrowthSource.sorted { $0.measuredOn < $1.measuredOn }.map { $0.heightCm }
+        }()
+        guard vals.count >= 2, let a = vals.dropLast().last, let b = vals.last else { return nil }
+        let d = b - a
+        guard abs(d) > 0.001 else { return nil }
+        return String(format: "%+.1f cm", d)
+    }
+
+    private var momReadOnlyGrowthCurveCard: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            HStack {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Growth Curve")
+                        .font(.system(size: 20, weight: .bold, design: .rounded))
+                        .foregroundStyle(deepAccent)
+                    Text(curveShowsWeight ? "Weight progression (from your records)" : "Height progression (from your records)")
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundStyle(Color.black.opacity(0.45))
+                }
+                Spacer()
+                HStack(spacing: 0) {
+                    curveToggleButton(title: "Weight", isOn: curveShowsWeight) { curveShowsWeight = true }
+                    curveToggleButton(title: "Height", isOn: !curveShowsWeight) { curveShowsWeight = false }
+                }
+                .padding(4)
+                .background(Color.white.opacity(0.7))
+                .clipShape(Capsule())
+            }
+
+            ZStack {
+                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                    .fill(model.accentColor.opacity(0.12))
+                GrowthLineChart(
+                    accentColor: deepAccent,
+                    weights: curveShowsWeight ? curveWeights : curveHeights
+                )
+                .frame(height: 200)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 14)
+            }
+        }
+        .padding(18)
+        .background(Color.white.opacity(0.5))
+        .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+    }
+
+    private func curveToggleButton(title: String, isOn: Bool, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Text(title)
+                .font(.system(size: 12, weight: .bold))
+                .foregroundStyle(isOn ? Color.white : Color.black.opacity(0.45))
+                .padding(.horizontal, 14)
+                .padding(.vertical, 8)
+                .background(isOn ? deepAccent : Color.clear)
+                .clipShape(Capsule())
+        }
+        .buttonStyle(.plain)
+    }
+
+    private var curveWeights: [Double] {
+        if childId != nil {
+            return childGrowthSource.sorted { $0.measuredOn < $1.measuredOn }.map { $0.weightKg }
+        }
+        return momGrowthSource.sorted { $0.measuredOn < $1.measuredOn }.map { $0.weightKg }
+    }
+
+    private var curveHeights: [Double] {
+        if childId != nil {
+            return childGrowthSource.sorted { $0.measuredOn < $1.measuredOn }.map { $0.heightCm }
+        }
+        return momGrowthSource.sorted { $0.measuredOn < $1.measuredOn }.map { $0.heightCm }
+    }
+
+    private var momReadOnlyMilestonesSection: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            HStack(spacing: 8) {
+                Image(systemName: "sparkles")
+                    .foregroundStyle(model.accentColor)
+                Text("Milestones")
+                    .font(.system(size: 20, weight: .bold, design: .rounded))
+                    .foregroundStyle(deepAccent)
+            }
+
+            if milestoneTimelineItems.isEmpty {
+                Text("Milestones from visits will appear here when your midwife adds them.")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundStyle(Color.black.opacity(0.45))
+            } else {
+                VStack(alignment: .leading, spacing: 0) {
+                    ForEach(Array(milestoneTimelineItems.enumerated()), id: \.offset) { idx, item in
+                        milestoneRow(item: item, isLast: idx == milestoneTimelineItems.count - 1)
+                    }
+                }
+            }
+        }
+    }
+
+    private var milestoneTimelineItems: [(date: String, title: String, body: String)] {
+        var items: [(String, String, String)] = []
+        if childId != nil {
+            for r in childGrowthSource.sorted(by: { $0.measuredOn < $1.measuredOn }) {
+                let date = displayDate(fromISO: r.measuredOn)
+                if let m = r.milestones, !m.isEmpty {
+                    for part in m.split(separator: ",") {
+                        let t = String(part).trimmingCharacters(in: .whitespacesAndNewlines)
+                        if !t.isEmpty {
+                            items.append((date, t, r.notes?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""))
+                        }
+                    }
+                } else if let n = r.notes, !n.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                    items.append((date, "Growth visit", n))
+                }
+            }
+        } else {
+            for r in momGrowthSource.sorted(by: { $0.measuredOn < $1.measuredOn }) {
+                let date = displayDate(fromISO: r.measuredOn)
+                if let m = r.milestones, !m.isEmpty {
+                    for part in m.split(separator: ",") {
+                        let t = String(part).trimmingCharacters(in: .whitespacesAndNewlines)
+                        if !t.isEmpty {
+                            items.append((date, t, r.notes?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""))
+                        }
+                    }
+                } else if let n = r.notes, !n.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                    items.append((date, "Visit note", n))
+                }
+            }
+        }
+        return items.reversed()
+    }
+
+    private func milestoneRow(item: (date: String, title: String, body: String), isLast: Bool) -> some View {
+        HStack(alignment: .top, spacing: 14) {
+            VStack(spacing: 0) {
+                Circle()
+                    .fill(model.accentColor)
+                    .frame(width: 12, height: 12)
+                if !isLast {
+                    Rectangle()
+                        .fill(model.accentColor.opacity(0.25))
+                        .frame(width: 2)
+                        .frame(minHeight: 36)
+                }
+            }
+            .frame(width: 12)
+
+            VStack(alignment: .leading, spacing: 6) {
+                Text(item.title)
+                    .font(.system(size: 17, weight: .bold, design: .rounded))
+                    .foregroundStyle(deepAccent)
+                Text(item.date)
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundStyle(Color.black.opacity(0.4))
+                if !item.body.isEmpty {
+                    Text(item.body)
+                        .font(.system(size: 14, weight: .regular))
+                        .foregroundStyle(Color.black.opacity(0.55))
+                }
+            }
+            .padding(.bottom, isLast ? 0 : 18)
+            Spacer(minLength: 0)
         }
     }
 
@@ -537,6 +874,7 @@ struct GrowthTrackingMomView: View {
     }
 
     private func applyDatabaseRecords(_ records: [GrowthRecord]) {
+        momGrowthSource = records
         rows = records.map { record in
             GrowthRow(
                 dateText: displayDate(fromISO: record.measuredOn),
@@ -549,6 +887,7 @@ struct GrowthTrackingMomView: View {
     }
 
     private func applyDatabaseRecords(_ records: [ChildGrowthRecord]) {
+        childGrowthSource = records
         rows = records.map { record in
             GrowthRow(
                 dateText: displayDate(fromISO: record.measuredOn),

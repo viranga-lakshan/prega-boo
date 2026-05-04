@@ -1,0 +1,136 @@
+{
+  "source": "/Users/cobsccomp242p-068/prega-boo/prega-boo/View/CareFinderView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Directions",
+        "location": {
+          "startingColumn": 16,
+          "startingLine": 105
+        }
+      },
+      {
+        "comment": "",
+        "key": "OK",
+        "location": {
+          "startingColumn": 20,
+          "startingLine": 109
+        }
+      },
+      {
+        "comment": "",
+        "key": "Care Finder",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 130
+        }
+      },
+      {
+        "comment": "",
+        "key": "Search hospitals & centers",
+        "location": {
+          "startingColumn": 27,
+          "startingLine": 126
+        }
+      },
+      {
+        "comment": "",
+        "key": "Calculating route…",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 216
+        }
+      },
+      {
+        "comment": "",
+        "key": "To %@",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 233
+        }
+      },
+      {
+        "comment": "",
+        "key": "Nearby Care",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 308
+        }
+      },
+      {
+        "comment": "",
+        "key": "See List",
+        "location": {
+          "startingColumn": 37,
+          "startingLine": 319
+        }
+      },
+      {
+        "comment": "",
+        "key": "See Grid",
+        "location": {
+          "startingColumn": 50,
+          "startingLine": 319
+        }
+      },
+      {
+        "comment": "",
+        "key": "Open Now",
+        "location": {
+          "startingColumn": 37,
+          "startingLine": 433
+        }
+      },
+      {
+        "comment": "",
+        "key": "Closed",
+        "location": {
+          "startingColumn": 50,
+          "startingLine": 433
+        }
+      },
+      {
+        "comment": "",
+        "key": "%@ • %@",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 448
+        }
+      },
+      {
+        "comment": "",
+        "key": "Directions",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 462
+        }
+      },
+      {
+        "comment": "",
+        "key": "Open",
+        "location": {
+          "startingColumn": 25,
+          "startingLine": 528
+        }
+      },
+      {
+        "comment": "",
+        "key": "Closed",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 528
+        }
+      },
+      {
+        "comment": "",
+        "key": "Directions",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 534
+        }
+      }
+    ]
+  },
+  "version": 1
+}

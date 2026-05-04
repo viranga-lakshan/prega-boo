@@ -1,0 +1,32 @@
+{
+  "source": "/Users/cobsccomp242p-068/prega-boo/prega-boo/View/AppLockScreenView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Prega Boo is locked",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 34
+        }
+      },
+      {
+        "comment": "",
+        "key": "Enter your PIN or use %@ if enabled.",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 38
+        }
+      },
+      {
+        "comment": "",
+        "key": "Unlock with %@",
+        "location": {
+          "startingColumn": 34,
+          "startingLine": 51
+        }
+      }
+    ]
+  },
+  "version": 1
+}

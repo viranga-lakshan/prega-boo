@@ -1,0 +1,136 @@
+{
+  "source": "/Users/cobsccomp242p-068/prega-boo/prega-boo/View/GrowthTrackingMomView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Error",
+        "location": {
+          "startingColumn": 13,
+          "startingLine": 68
+        }
+      },
+      {
+        "comment": "",
+        "key": "OK",
+        "location": {
+          "startingColumn": 20,
+          "startingLine": 74
+        }
+      },
+      {
+        "comment": "",
+        "key": "Tracking growth and magical milestones since birth.",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 165
+        }
+      },
+      {
+        "comment": "",
+        "key": "Growth Tracking Mom",
+        "location": {
+          "startingColumn": 39,
+          "startingLine": 155
+        }
+      },
+      {
+        "comment": "",
+        "key": "Growth Tracking Baby",
+        "location": {
+          "startingColumn": 63,
+          "startingLine": 155
+        }
+      },
+      {
+        "comment": "",
+        "key": "Growth Curve",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 274
+        }
+      },
+      {
+        "comment": "",
+        "key": "Weight progression (from your records)",
+        "location": {
+          "startingColumn": 45,
+          "startingLine": 277
+        }
+      },
+      {
+        "comment": "",
+        "key": "Height progression (from your records)",
+        "location": {
+          "startingColumn": 88,
+          "startingLine": 277
+        }
+      },
+      {
+        "comment": "",
+        "key": "Milestones from visits will appear here when your midwife adds them.",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 346
+        }
+      },
+      {
+        "comment": "",
+        "key": "Milestones",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 340
+        }
+      },
+      {
+        "comment": "",
+        "key": "0",
+        "location": {
+          "startingColumn": 27,
+          "startingLine": 547
+        }
+      },
+      {
+        "comment": "",
+        "key": "Recent Entries",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 631
+        }
+      },
+      {
+        "comment": "",
+        "key": "No records yet",
+        "location": {
+          "startingColumn": 26,
+          "startingLine": 645
+        }
+      },
+      {
+        "comment": "",
+        "key": "Date",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 664
+        }
+      },
+      {
+        "comment": "",
+        "key": "Weight",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 667
+        }
+      },
+      {
+        "comment": "",
+        "key": "Height",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 670
+        }
+      }
+    ]
+  },
+  "version": 1
+}

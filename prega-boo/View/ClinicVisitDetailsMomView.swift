@@ -6,12 +6,20 @@ struct ClinicVisitDetailsMomView: View {
     let session: AuthSessionContext?
     let momUserId: UUID?
     let childId: UUID?
+    let mode: HealthFeatureViewMode
 
-    init(model: ClinicVisitDetailsMomModel, session: AuthSessionContext? = nil, momUserId: UUID? = nil, childId: UUID? = nil) {
+    init(
+        model: ClinicVisitDetailsMomModel,
+        session: AuthSessionContext? = nil,
+        momUserId: UUID? = nil,
+        childId: UUID? = nil,
+        mode: HealthFeatureViewMode = .midwifeEntry
+    ) {
         self.model = model
         self.session = session
         self.momUserId = momUserId
         self.childId = childId
+        self.mode = mode
     }
 
     @Environment(\.dismiss) private var dismiss
@@ -27,16 +35,255 @@ struct ClinicVisitDetailsMomView: View {
     @State private var isLoading = false
     @State private var errorMessage: String?
 
-    @State private var visits: [ClinicVisitRow] = [
-        ClinicVisitRow(dateText: "Today", timeText: "10:00 am", purpose: "visit"),
-        ClinicVisitRow(dateText: "01 October", timeText: "MMR.", purpose: "visit")
-    ]
+    /// Midwife table / local inserts
+    @State private var visits: [ClinicVisitRow] = []
+    /// Mom read-only: next upcoming (by visit date)
+    @State private var nextAppointment: ClinicVisitRow?
+    /// Mom read-only: past visits, newest first
+    @State private var historyVisits: [ClinicVisitRow] = []
 
     private let meridiems = ["AM", "PM"]
     private let hours = Array(1...12)
     private let minutes = stride(from: 0, through: 55, by: 5).map { $0 }
 
+    private var deepMaroon: Color { Color(red: 0.42, green: 0.11, blue: 0.20) }
+
+    private var screenTitle: String {
+        if childId == nil {
+            return "Clinic Visits Mom"
+        }
+        return "Clinic Visits Baby"
+    }
+
     var body: some View {
+        Group {
+            if mode == .momReadOnly {
+                momReadOnlyRoot
+            } else {
+                midwifeRoot
+            }
+        }
+        .navigationBarBackButtonHidden(true)
+        .onAppear { loadFromDatabaseIfPossible() }
+        .alert(
+            "Error",
+            isPresented: Binding(
+                get: { errorMessage != nil },
+                set: { newValue in if !newValue { errorMessage = nil } }
+            )
+        ) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(errorMessage ?? "")
+        }
+    }
+
+    // MARK: - Mom read-only (Health Passport style)
+
+    private var momReadOnlyRoot: some View {
+        ZStack {
+            model.backgroundColor
+                .ignoresSafeArea()
+
+            ScrollView(showsIndicators: false) {
+                VStack(alignment: .leading, spacing: 20) {
+                    momReadOnlyTopBar
+                        .padding(.top, 10)
+
+                    Text("NEXT APPOINTMENT")
+                        .font(.system(size: 12, weight: .bold, design: .rounded))
+                        .foregroundStyle(model.accentColor)
+                        .tracking(0.8)
+
+                    if isLoading {
+                        ProgressView()
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 24)
+                    } else if let next = nextAppointment {
+                        nextAppointmentCard(next)
+                    } else {
+                        noNextAppointmentCard
+                    }
+
+                    Text("HISTORY")
+                        .font(.system(size: 12, weight: .bold, design: .rounded))
+                        .foregroundStyle(Color.black.opacity(0.38))
+                        .tracking(0.8)
+                        .padding(.top, 8)
+
+                    if historyVisits.isEmpty, !isLoading {
+                        Text("No past visits on file yet.")
+                            .font(.system(size: 15, weight: .medium))
+                            .foregroundStyle(Color.black.opacity(0.45))
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(.vertical, 8)
+                    } else {
+                        VStack(spacing: 12) {
+                            ForEach(historyVisits) { row in
+                                historyRow(row)
+                            }
+                        }
+                    }
+                }
+                .padding(.horizontal, 18)
+                .padding(.bottom, 28)
+            }
+        }
+    }
+
+    private var momReadOnlyTopBar: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack {
+                Button(action: { dismiss() }) {
+                    Image(systemName: "chevron.left")
+                        .font(.system(size: 18, weight: .semibold))
+                        .foregroundStyle(deepMaroon)
+                }
+                Spacer()
+            }
+
+            Text(screenTitle)
+                .font(.system(size: 28, weight: .bold, design: .rounded))
+                .foregroundStyle(deepMaroon)
+        }
+    }
+
+    private func nextAppointmentCard(_ row: ClinicVisitRow) -> some View {
+        VStack(alignment: .leading, spacing: 14) {
+            HStack(alignment: .top) {
+                Text(visitCategoryTag(row.purpose))
+                    .font(.system(size: 10, weight: .bold, design: .rounded))
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 6)
+                    .background(model.accentColor)
+                    .clipShape(Capsule())
+
+                Spacer(minLength: 12)
+
+                VStack(alignment: .trailing, spacing: 4) {
+                    Text(row.timeText)
+                        .font(.system(size: 17, weight: .bold, design: .rounded))
+                        .foregroundStyle(deepMaroon)
+                    if let iso = row.visitDateISO {
+                        Text(formatAppointmentHeaderDate(iso: iso))
+                            .font(.system(size: 13, weight: .medium))
+                            .foregroundStyle(Color.black.opacity(0.45))
+                    }
+                }
+            }
+
+            Text(row.purpose)
+                .font(.system(size: 18, weight: .bold, design: .rounded))
+                .foregroundStyle(deepMaroon)
+                .fixedSize(horizontal: false, vertical: true)
+
+            HStack(alignment: .top, spacing: 12) {
+                Image(systemName: "cross.case.fill")
+                    .font(.system(size: 20))
+                    .foregroundStyle(deepMaroon)
+                    .frame(width: 28, alignment: .leading)
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Your care team")
+                        .font(.system(size: 15, weight: .bold, design: .rounded))
+                        .foregroundStyle(deepMaroon)
+                    Text("Visit details are kept in your Health Passport. Ask your clinic if you need the exact provider or location.")
+                        .font(.system(size: 13, weight: .regular))
+                        .foregroundStyle(Color.black.opacity(0.45))
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+            .padding(14)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(model.accentColor.opacity(0.14))
+            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        }
+        .padding(18)
+        .background(Color.white)
+        .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
+        .shadow(color: Color.black.opacity(0.06), radius: 10, y: 4)
+    }
+
+    private var noNextAppointmentCard: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("No upcoming visit")
+                .font(.system(size: 17, weight: .bold, design: .rounded))
+                .foregroundStyle(deepMaroon)
+            Text("There isn’t a future clinic visit on file. Past visits appear below.")
+                .font(.system(size: 14, weight: .regular))
+                .foregroundStyle(Color.black.opacity(0.45))
+        }
+        .padding(18)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color.white.opacity(0.9))
+        .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
+    }
+
+    private func historyRow(_ row: ClinicVisitRow) -> some View {
+        HStack(alignment: .top, spacing: 14) {
+            ZStack {
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .fill(Color.white)
+                    .frame(width: 56, height: 56)
+                    .shadow(color: Color.black.opacity(0.05), radius: 4, y: 2)
+
+                Text(historyDateBadge(iso: row.visitDateISO))
+                    .font(.system(size: 11, weight: .bold, design: .rounded))
+                    .foregroundStyle(deepMaroon)
+                    .multilineTextAlignment(.center)
+                    .frame(width: 52)
+            }
+
+            VStack(alignment: .leading, spacing: 6) {
+                Text(row.purpose)
+                    .font(.system(size: 16, weight: .bold, design: .rounded))
+                    .foregroundStyle(deepMaroon)
+                    .fixedSize(horizontal: false, vertical: true)
+
+                Text("\(row.timeText) · Completed visit")
+                    .font(.system(size: 13, weight: .regular))
+                    .foregroundStyle(Color.black.opacity(0.45))
+            }
+
+            Spacer(minLength: 0)
+
+            Image(systemName: "checkmark.circle.fill")
+                .font(.system(size: 20))
+                .foregroundStyle(Color.black.opacity(0.22))
+        }
+        .padding(14)
+        .background(model.accentColor.opacity(0.12))
+        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+    }
+
+    private func visitCategoryTag(_ purpose: String) -> String {
+        let t = purpose.trimmingCharacters(in: .whitespacesAndNewlines)
+        if t.isEmpty { return "VISIT" }
+        let line = t.split(separator: "\n").first.map(String.init) ?? t
+        let capped = line.count > 28 ? String(line.prefix(28)) + "…" : line
+        return capped.uppercased()
+    }
+
+    private func formatAppointmentHeaderDate(iso: String) -> String {
+        guard let d = MomHealthAgeFormatting.parseVisitDate(iso: iso) else { return "" }
+        let df = DateFormatter()
+        df.locale = Locale(identifier: "en_US_POSIX")
+        df.dateFormat = "EEEE, d MMM"
+        return df.string(from: d)
+    }
+
+    private func historyDateBadge(iso: String?) -> String {
+        guard let iso, let d = MomHealthAgeFormatting.parseVisitDate(iso: iso) else { return "—" }
+        let df = DateFormatter()
+        df.locale = Locale(identifier: "en_US_POSIX")
+        df.dateFormat = "MMM\ndd"
+        return df.string(from: d).uppercased()
+    }
+
+    // MARK: - Midwife entry (original)
+
+    private var midwifeRoot: some View {
         ZStack {
             model.backgroundColor
                 .ignoresSafeArea()
@@ -55,19 +302,6 @@ struct ClinicVisitDetailsMomView: View {
                 }
                 .padding(.horizontal, 18)
             }
-        }
-        .navigationBarBackButtonHidden(true)
-        .onAppear { loadFromDatabaseIfPossible() }
-        .alert(
-            "Error",
-            isPresented: Binding(
-                get: { errorMessage != nil },
-                set: { newValue in if !newValue { errorMessage = nil } }
-            )
-        ) {
-            Button("OK", role: .cancel) {}
-        } message: {
-            Text(errorMessage ?? "")
         }
     }
 
@@ -175,7 +409,7 @@ struct ClinicVisitDetailsMomView: View {
     private var timePickers: some View {
         HStack(spacing: 10) {
             Menu {
-                    ForEach(hours, id: \.self) { h in
+                ForEach(hours, id: \.self) { h in
                     Button(String(format: "%02d", h)) { hour = h }
                 }
             } label: {
@@ -187,7 +421,7 @@ struct ClinicVisitDetailsMomView: View {
                 .foregroundStyle(Color.black.opacity(0.5))
 
             Menu {
-                    ForEach(minutes, id: \.self) { m in
+                ForEach(minutes, id: \.self) { m in
                     Button(String(format: "%02d", m)) { minute = m }
                 }
             } label: {
@@ -195,7 +429,7 @@ struct ClinicVisitDetailsMomView: View {
             }
 
             Menu {
-                    ForEach(meridiems, id: \.self) { v in
+                ForEach(meridiems, id: \.self) { v in
                     Button(v) { meridiem = v }
                 }
             } label: {
@@ -311,11 +545,17 @@ struct ClinicVisitDetailsMomView: View {
         guard !trimmedPurpose.isEmpty else { return }
 
         let timeText = String(format: "%02d:%02d %@", hour, minute, meridiem.lowercased())
+        let dateISO = isoDate(visitDate)
 
         guard let session else {
             let dateText = "Today"
             visits.insert(
-                ClinicVisitRow(dateText: dateText, timeText: timeText, purpose: trimmedPurpose),
+                ClinicVisitRow(
+                    dateText: dateText,
+                    timeText: timeText,
+                    purpose: trimmedPurpose,
+                    visitDateISO: dateISO
+                ),
                 at: 0
             )
             purpose = ""
@@ -330,7 +570,7 @@ struct ClinicVisitDetailsMomView: View {
                     try await ChildClinicVisitRecordsRepository().insertRecord(
                         childId: childId,
                         createdByUserId: session.userId,
-                        visitDateISO: isoDate(visitDate),
+                        visitDateISO: dateISO,
                         visitTimeText: timeText,
                         purpose: trimmedPurpose,
                         accessToken: session.accessToken
@@ -355,7 +595,12 @@ struct ClinicVisitDetailsMomView: View {
         guard let momUserId else {
             let dateText = "Today"
             visits.insert(
-                ClinicVisitRow(dateText: dateText, timeText: timeText, purpose: trimmedPurpose),
+                ClinicVisitRow(
+                    dateText: dateText,
+                    timeText: timeText,
+                    purpose: trimmedPurpose,
+                    visitDateISO: dateISO
+                ),
                 at: 0
             )
             purpose = ""
@@ -369,7 +614,7 @@ struct ClinicVisitDetailsMomView: View {
                 try await ClinicVisitRecordsRepository().insertRecord(
                     momUserId: momUserId,
                     createdByUserId: session.userId,
-                    visitDateISO: isoDate(visitDate),
+                    visitDateISO: dateISO,
                     visitTimeText: timeText,
                     purpose: trimmedPurpose,
                     accessToken: session.accessToken
@@ -394,6 +639,8 @@ struct ClinicVisitDetailsMomView: View {
         guard let session else { return }
 
         visits = []
+        nextAppointment = nil
+        historyVisits = []
         isLoading = true
         Task {
             defer { isLoading = false }
@@ -419,23 +666,74 @@ struct ClinicVisitDetailsMomView: View {
         }
     }
 
+    private func applyMomReadOnlyRows(_ rows: [ClinicVisitRow]) {
+        let cal = Calendar.current
+        let today = cal.startOfDay(for: Date())
+
+        let dated: [(ClinicVisitRow, Date)] = rows.compactMap { row in
+            guard let iso = row.visitDateISO,
+                  let d = MomHealthAgeFormatting.parseVisitDate(iso: iso) else { return nil }
+            return (row, cal.startOfDay(for: d))
+        }
+
+        let future = dated.filter { $0.1 >= today }.sorted { $0.1 < $1.1 }
+        let past = dated.filter { $0.1 < today }.sorted { $0.1 > $1.1 }
+
+        nextAppointment = future.first?.0
+
+        let undated = rows.filter { row in
+            guard let iso = row.visitDateISO else { return true }
+            return MomHealthAgeFormatting.parseVisitDate(iso: iso) == nil
+        }
+
+        historyVisits = past.map(\.0) + undated.reversed()
+    }
+
     private func applyDatabaseRecords(_ records: [ClinicVisitRecord]) {
-        visits = records.map { record in
+        let rows = records.map { record in
             ClinicVisitRow(
+                id: record.id,
                 dateText: displayDate(fromISO: record.visitDate),
                 timeText: record.visitTime,
-                purpose: record.purpose
+                purpose: record.purpose,
+                visitDateISO: record.visitDate
             )
+        }
+        switch mode {
+        case .momReadOnly:
+            applyMomReadOnlyRows(rows)
+        case .midwifeEntry:
+            visits = rows.sorted { a, b in
+                guard let ia = a.visitDateISO,
+                      let da = MomHealthAgeFormatting.parseVisitDate(iso: ia),
+                      let ib = b.visitDateISO,
+                      let db = MomHealthAgeFormatting.parseVisitDate(iso: ib) else { return false }
+                return da > db
+            }
         }
     }
 
     private func applyDatabaseRecords(_ records: [ChildClinicVisitRecord]) {
-        visits = records.map { record in
+        let rows = records.map { record in
             ClinicVisitRow(
+                id: record.id,
                 dateText: displayDate(fromISO: record.visitDate),
                 timeText: record.visitTime,
-                purpose: record.purpose
+                purpose: record.purpose,
+                visitDateISO: record.visitDate
             )
+        }
+        switch mode {
+        case .momReadOnly:
+            applyMomReadOnlyRows(rows)
+        case .midwifeEntry:
+            visits = rows.sorted { a, b in
+                guard let ia = a.visitDateISO,
+                      let da = MomHealthAgeFormatting.parseVisitDate(iso: ia),
+                      let ib = b.visitDateISO,
+                      let db = MomHealthAgeFormatting.parseVisitDate(iso: ib) else { return false }
+                return da > db
+            }
         }
     }
 

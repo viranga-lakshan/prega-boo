@@ -1,0 +1,122 @@
+[
+  {
+    "id": "ninewells",
+    "name": "Ninewells Hospital",
+    "shortName": "Ninewells",
+    "kind": "hospital",
+    "latitude": 6.9142,
+    "longitude": 79.8875,
+    "area": "Narahenpita",
+    "phone": "+94117775555",
+    "opensMinutes": 0,
+    "closesMinutes": 1440
+  },
+  {
+    "id": "lanka-hospitals",
+    "name": "Lanka Hospitals",
+    "shortName": "Lanka Hospitals",
+    "kind": "hospital",
+    "latitude": 6.9021,
+    "longitude": 79.8584,
+    "area": "Narahenpita",
+    "phone": "+94117547777",
+    "opensMinutes": 0,
+    "closesMinutes": 1440
+  },
+  {
+    "id": "castle-street",
+    "name": "Castle Street Hospital for Women",
+    "shortName": "Castle Street",
+    "kind": "maternal",
+    "latitude": 6.9165,
+    "longitude": 79.8763,
+    "area": "Colombo 08",
+    "phone": "+94112695261",
+    "opensMinutes": 480,
+    "closesMinutes": 1200
+  },
+  {
+    "id": "de-soysa",
+    "name": "De Soysa Hospital for Women",
+    "shortName": "De Soysa",
+    "kind": "maternal",
+    "latitude": 6.9256,
+    "longitude": 79.8652,
+    "area": "Borella",
+    "phone": "+94112697371",
+    "opensMinutes": 480,
+    "closesMinutes": 1200
+  },
+  {
+    "id": "nhsl",
+    "name": "National Hospital of Sri Lanka",
+    "shortName": "NHSL",
+    "kind": "hospital",
+    "latitude": 6.9155,
+    "longitude": 79.8755,
+    "area": "Colombo 07",
+    "phone": "+94112691111",
+    "opensMinutes": 0,
+    "closesMinutes": 1440
+  },
+  {
+    "id": "lady-ridgeway",
+    "name": "Lady Ridgeway Hospital for Children",
+    "shortName": "LRH",
+    "kind": "hospital",
+    "latitude": 6.9182,
+    "longitude": 79.8812,
+    "area": "Borella",
+    "phone": "+94112691261",
+    "opensMinutes": 0,
+    "closesMinutes": 1440
+  },
+  {
+    "id": "karapitiya",
+    "name": "Teaching Hospital Karapitiya",
+    "shortName": "Karapitiya",
+    "kind": "hospital",
+    "latitude": 6.0467,
+    "longitude": 80.2165,
+    "area": "Galle",
+    "phone": "+94912222261",
+    "opensMinutes": 0,
+    "closesMinutes": 1440
+  },
+  {
+    "id": "mahamodara",
+    "name": "Mahamodara Maternity Hospital",
+    "shortName": "Mahamodara",
+    "kind": "maternal",
+    "latitude": 6.0356,
+    "longitude": 80.217,
+    "area": "Galle",
+    "phone": "+94912222602",
+    "opensMinutes": 480,
+    "closesMinutes": 1200
+  },
+  {
+    "id": "peradeniya",
+    "name": "Teaching Hospital Peradeniya",
+    "shortName": "Peradeniya",
+    "kind": "hospital",
+    "latitude": 7.2569,
+    "longitude": 80.5954,
+    "area": "Kandy",
+    "phone": "+94812388226",
+    "opensMinutes": 0,
+    "closesMinutes": 1440
+  },
+  {
+    "id": "jaffna-teaching",
+    "name": "Teaching Hospital Jaffna",
+    "shortName": "Jaffna TH",
+    "kind": "hospital",
+    "latitude": 9.6615,
+    "longitude": 80.025,
+    "area": "Jaffna",
+    "phone": "+94212222261",
+    "opensMinutes": 0,
+    "closesMinutes": 1440
+  }
+]

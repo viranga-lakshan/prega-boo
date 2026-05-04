@@ -10,6 +10,8 @@ import SwiftUI
 struct ContentView: View {
     var body: some View {
         OnboardingFlowView()
+            .environmentObject(MomSessionStore.shared)
+            .environmentObject(AppLockManager.shared)
     }
 }
 

@@ -41,10 +41,7 @@ final class MomAndBabyDetailsController {
                 )
             ],
             babiesDetailsTitle: "Babies Details",
-            babies: [
-                BabySummary(name: "Aria Kavihari", ageText: "2 years 4 months", statusText: "Active"),
-                BabySummary(name: "Leo Kavihari", ageText: "4 months", statusText: "Active")
-            ]
+            babies: []
         )
     }
 }

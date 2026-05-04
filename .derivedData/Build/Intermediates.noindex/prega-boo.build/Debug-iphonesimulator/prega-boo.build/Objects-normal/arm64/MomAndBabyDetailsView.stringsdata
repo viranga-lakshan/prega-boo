@@ -1,0 +1,24 @@
+{
+  "source": "/Users/cobsccomp242p-068/prega-boo/prega-boo/View/MomAndBabyDetailsView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "No baby profiles yet. Your midwife can add them, or complete child registration.",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 315
+        }
+      },
+      {
+        "comment": "",
+        "key": "View",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 360
+        }
+      }
+    ]
+  },
+  "version": 1
+}

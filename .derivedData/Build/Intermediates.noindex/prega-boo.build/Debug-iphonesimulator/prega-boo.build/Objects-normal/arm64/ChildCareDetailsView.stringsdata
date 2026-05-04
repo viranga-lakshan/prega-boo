@@ -1,0 +1,48 @@
+{
+  "source": "/Users/cobsccomp242p-068/prega-boo/prega-boo/View/ChildCareDetailsView.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Baby Details",
+        "location": {
+          "startingColumn": 30,
+          "startingLine": 58
+        }
+      },
+      {
+        "comment": "",
+        "key": "Baby\nDetails",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 126
+        }
+      },
+      {
+        "comment": "",
+        "key": "Baby Details",
+        "location": {
+          "startingColumn": 37,
+          "startingLine": 131
+        }
+      },
+      {
+        "comment": "",
+        "key": "Edit",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 136
+        }
+      },
+      {
+        "comment": "",
+        "key": "Born %@ • Mother: %@",
+        "location": {
+          "startingColumn": 18,
+          "startingLine": 172
+        }
+      }
+    ]
+  },
+  "version": 1
+}
