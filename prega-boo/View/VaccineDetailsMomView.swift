@@ -4,11 +4,13 @@ struct VaccineDetailsMomView: View {
     let model: VaccineDetailsMomModel
     let session: AuthSessionContext?
     let momUserId: UUID?
+    let childId: UUID?
 
-    init(model: VaccineDetailsMomModel, session: AuthSessionContext? = nil, momUserId: UUID? = nil) {
+    init(model: VaccineDetailsMomModel, session: AuthSessionContext? = nil, momUserId: UUID? = nil, childId: UUID? = nil) {
         self.model = model
         self.session = session
         self.momUserId = momUserId
+        self.childId = childId
     }
 
     @Environment(\.dismiss) private var dismiss
@@ -84,7 +86,7 @@ struct VaccineDetailsMomView: View {
 
             HStack(alignment: .bottom, spacing: 16) {
                 VStack(alignment: .leading, spacing: 10) {
-                    Text(model.title)
+                    Text(childId == nil ? model.title : "Vaccine Details Baby")
                         .font(.system(size: 38, weight: .bold, design: .rounded))
                         .foregroundStyle(Color.black.opacity(0.8))
                         .fixedSize(horizontal: false, vertical: true)
@@ -244,7 +246,45 @@ struct VaccineDetailsMomView: View {
         let trimmedDosage = dosage.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedName.isEmpty, !trimmedDosage.isEmpty else { return }
 
-        guard let session, let momUserId else {
+        guard let session else {
+            vaccines.insert(
+                VaccineRow(dateText: "Today", name: trimmedName, dosage: trimmedDosage),
+                at: 0
+            )
+            vaccineName = ""
+            dosage = ""
+            return
+        }
+
+        if let childId {
+            isLoading = true
+            Task {
+                defer { isLoading = false }
+                do {
+                    let todayISO = isoDate(Date())
+                    try await ChildVaccineRecordsRepository().insertRecord(
+                        childId: childId,
+                        createdByUserId: session.userId,
+                        administeredOnISO: todayISO,
+                        vaccineName: trimmedName,
+                        dosage: trimmedDosage,
+                        accessToken: session.accessToken
+                    )
+
+                    vaccineName = ""
+                    dosage = ""
+
+                    try await reloadChildRecords(childId: childId, accessToken: session.accessToken)
+                } catch SupabaseServiceError.httpError(let status, let body) {
+                    errorMessage = "Save failed (\(status)): \(SupabaseAuthService.humanMessage(fromBody: body))"
+                } catch {
+                    errorMessage = "Save failed: \(error.localizedDescription)"
+                }
+            }
+            return
+        }
+
+        guard let momUserId else {
             vaccines.insert(
                 VaccineRow(dateText: "Today", name: trimmedName, dosage: trimmedDosage),
                 at: 0
@@ -271,7 +311,7 @@ struct VaccineDetailsMomView: View {
                 vaccineName = ""
                 dosage = ""
 
-                try await reloadRecords(momUserId: momUserId, accessToken: session.accessToken)
+                try await reloadMomRecords(momUserId: momUserId, accessToken: session.accessToken)
             } catch SupabaseServiceError.httpError(let status, let body) {
                 errorMessage = "Save failed (\(status)): \(SupabaseAuthService.humanMessage(fromBody: body))"
             } catch {
@@ -281,13 +321,17 @@ struct VaccineDetailsMomView: View {
     }
 
     private func loadFromDatabaseIfPossible() {
-        guard let session, let momUserId else { return }
+        guard let session else { return }
         vaccines = []
         isLoading = true
         Task {
             defer { isLoading = false }
             do {
-                try await reloadRecords(momUserId: momUserId, accessToken: session.accessToken)
+                if let childId {
+                    try await reloadChildRecords(childId: childId, accessToken: session.accessToken)
+                } else if let momUserId {
+                    try await reloadMomRecords(momUserId: momUserId, accessToken: session.accessToken)
+                }
             } catch SupabaseServiceError.httpError(let status, let body) {
                 errorMessage = "Load failed (\(status)): \(SupabaseAuthService.humanMessage(fromBody: body))"
             } catch {
@@ -296,8 +340,20 @@ struct VaccineDetailsMomView: View {
         }
     }
 
-    private func reloadRecords(momUserId: UUID, accessToken: String) async throws {
+    private func reloadMomRecords(momUserId: UUID, accessToken: String) async throws {
         let records = try await VaccineRecordsRepository().fetchRecords(momUserId: momUserId, accessToken: accessToken)
+        vaccines = records.map {
+            VaccineRow(
+                id: $0.id,
+                dateText: displayDate(iso: $0.administeredOn),
+                name: $0.vaccineName,
+                dosage: $0.dosage
+            )
+        }
+    }
+
+    private func reloadChildRecords(childId: UUID, accessToken: String) async throws {
+        let records = try await ChildVaccineRecordsRepository().fetchRecords(childId: childId, accessToken: accessToken)
         vaccines = records.map {
             VaccineRow(
                 id: $0.id,

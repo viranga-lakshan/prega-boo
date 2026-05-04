@@ -13,6 +13,8 @@ struct MidwifeMomDetailsView: View {
 
     @State private var isNavigatingToChildRegistration = false
     @State private var isNavigatingToUpdateMomDetails = false
+    @State private var selectedChild: ChildProfile?
+    @State private var isNavigatingToChildCareDetails = false
 
     var body: some View {
         ZStack {
@@ -62,6 +64,20 @@ struct MidwifeMomDetailsView: View {
                     mom: mom
                 ),
                 isActive: $isNavigatingToUpdateMomDetails
+            ) {
+                EmptyView()
+            }
+            .hidden()
+
+            NavigationLink(
+                destination: Group {
+                    if let selectedChild {
+                        ChildCareDetailsView(session: session, mom: mom, child: selectedChild)
+                    } else {
+                        EmptyView()
+                    }
+                },
+                isActive: $isNavigatingToChildCareDetails
             ) {
                 EmptyView()
             }
@@ -205,7 +221,13 @@ struct MidwifeMomDetailsView: View {
             } else {
                 VStack(spacing: 16) {
                     ForEach(children) { child in
-                        childRow(child)
+                        Button {
+                            selectedChild = child
+                            isNavigatingToChildCareDetails = true
+                        } label: {
+                            childRow(child)
+                        }
+                        .buttonStyle(.plain)
                     }
                 }
             }

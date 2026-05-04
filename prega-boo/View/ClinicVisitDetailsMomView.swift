@@ -1,7 +1,18 @@
 import SwiftUI
+import Foundation
 
 struct ClinicVisitDetailsMomView: View {
     let model: ClinicVisitDetailsMomModel
+    let session: AuthSessionContext?
+    let momUserId: UUID?
+    let childId: UUID?
+
+    init(model: ClinicVisitDetailsMomModel, session: AuthSessionContext? = nil, momUserId: UUID? = nil, childId: UUID? = nil) {
+        self.model = model
+        self.session = session
+        self.momUserId = momUserId
+        self.childId = childId
+    }
 
     @Environment(\.dismiss) private var dismiss
 
@@ -12,6 +23,9 @@ struct ClinicVisitDetailsMomView: View {
     @State private var meridiem: String = "AM"
 
     @State private var purpose: String = ""
+
+    @State private var isLoading = false
+    @State private var errorMessage: String?
 
     @State private var visits: [ClinicVisitRow] = [
         ClinicVisitRow(dateText: "Today", timeText: "10:00 am", purpose: "visit"),
@@ -43,6 +57,18 @@ struct ClinicVisitDetailsMomView: View {
             }
         }
         .navigationBarBackButtonHidden(true)
+        .onAppear { loadFromDatabaseIfPossible() }
+        .alert(
+            "Error",
+            isPresented: Binding(
+                get: { errorMessage != nil },
+                set: { newValue in if !newValue { errorMessage = nil } }
+            )
+        ) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(errorMessage ?? "")
+        }
     }
 
     private var topBar: some View {
@@ -69,7 +95,7 @@ struct ClinicVisitDetailsMomView: View {
                 .fill(Color.white.opacity(0.55))
 
             HStack(alignment: .bottom, spacing: 16) {
-                Text(model.title)
+                Text(childId == nil ? model.title : "Clinic Visit Details Baby")
                     .font(.system(size: 38, weight: .bold, design: .rounded))
                     .foregroundStyle(Color.black.opacity(0.8))
                     .fixedSize(horizontal: false, vertical: true)
@@ -209,6 +235,19 @@ struct ClinicVisitDetailsMomView: View {
             columnHeaders
 
             VStack(spacing: 0) {
+                if isLoading {
+                    ProgressView()
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 18)
+                }
+
+                if visits.isEmpty, !isLoading {
+                    Text("No visits yet")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundStyle(Color.black.opacity(0.45))
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 18)
+                }
                 ForEach(visits) { row in
                     visitRow(row)
                     Divider().opacity(0.25)
@@ -266,18 +305,163 @@ struct ClinicVisitDetailsMomView: View {
     }
 
     private func addVisit() {
+        errorMessage = nil
+
         let trimmedPurpose = purpose.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedPurpose.isEmpty else { return }
 
-        let dateText = "Today"
         let timeText = String(format: "%02d:%02d %@", hour, minute, meridiem.lowercased())
 
-        visits.insert(
-            ClinicVisitRow(dateText: dateText, timeText: timeText, purpose: trimmedPurpose),
-            at: 0
-        )
+        guard let session else {
+            let dateText = "Today"
+            visits.insert(
+                ClinicVisitRow(dateText: dateText, timeText: timeText, purpose: trimmedPurpose),
+                at: 0
+            )
+            purpose = ""
+            return
+        }
 
-        purpose = ""
+        if let childId {
+            isLoading = true
+            Task {
+                defer { isLoading = false }
+                do {
+                    try await ChildClinicVisitRecordsRepository().insertRecord(
+                        childId: childId,
+                        createdByUserId: session.userId,
+                        visitDateISO: isoDate(visitDate),
+                        visitTimeText: timeText,
+                        purpose: trimmedPurpose,
+                        accessToken: session.accessToken
+                    )
+
+                    purpose = ""
+
+                    let records = try await ChildClinicVisitRecordsRepository().fetchRecords(
+                        childId: childId,
+                        accessToken: session.accessToken
+                    )
+                    applyDatabaseRecords(records)
+                } catch SupabaseServiceError.httpError(let status, let body) {
+                    errorMessage = "Save failed (\(status)): \(SupabaseAuthService.humanMessage(fromBody: body))"
+                } catch {
+                    errorMessage = "Save failed: \(error.localizedDescription)"
+                }
+            }
+            return
+        }
+
+        guard let momUserId else {
+            let dateText = "Today"
+            visits.insert(
+                ClinicVisitRow(dateText: dateText, timeText: timeText, purpose: trimmedPurpose),
+                at: 0
+            )
+            purpose = ""
+            return
+        }
+
+        isLoading = true
+        Task {
+            defer { isLoading = false }
+            do {
+                try await ClinicVisitRecordsRepository().insertRecord(
+                    momUserId: momUserId,
+                    createdByUserId: session.userId,
+                    visitDateISO: isoDate(visitDate),
+                    visitTimeText: timeText,
+                    purpose: trimmedPurpose,
+                    accessToken: session.accessToken
+                )
+
+                purpose = ""
+
+                let records = try await ClinicVisitRecordsRepository().fetchRecords(
+                    momUserId: momUserId,
+                    accessToken: session.accessToken
+                )
+                applyDatabaseRecords(records)
+            } catch SupabaseServiceError.httpError(let status, let body) {
+                errorMessage = "Save failed (\(status)): \(SupabaseAuthService.humanMessage(fromBody: body))"
+            } catch {
+                errorMessage = "Save failed: \(error.localizedDescription)"
+            }
+        }
+    }
+
+    private func loadFromDatabaseIfPossible() {
+        guard let session else { return }
+
+        visits = []
+        isLoading = true
+        Task {
+            defer { isLoading = false }
+            do {
+                if let childId {
+                    let records = try await ChildClinicVisitRecordsRepository().fetchRecords(
+                        childId: childId,
+                        accessToken: session.accessToken
+                    )
+                    applyDatabaseRecords(records)
+                } else if let momUserId {
+                    let records = try await ClinicVisitRecordsRepository().fetchRecords(
+                        momUserId: momUserId,
+                        accessToken: session.accessToken
+                    )
+                    applyDatabaseRecords(records)
+                }
+            } catch SupabaseServiceError.httpError(let status, let body) {
+                errorMessage = "Load failed (\(status)): \(SupabaseAuthService.humanMessage(fromBody: body))"
+            } catch {
+                errorMessage = "Load failed: \(error.localizedDescription)"
+            }
+        }
+    }
+
+    private func applyDatabaseRecords(_ records: [ClinicVisitRecord]) {
+        visits = records.map { record in
+            ClinicVisitRow(
+                dateText: displayDate(fromISO: record.visitDate),
+                timeText: record.visitTime,
+                purpose: record.purpose
+            )
+        }
+    }
+
+    private func applyDatabaseRecords(_ records: [ChildClinicVisitRecord]) {
+        visits = records.map { record in
+            ClinicVisitRow(
+                dateText: displayDate(fromISO: record.visitDate),
+                timeText: record.visitTime,
+                purpose: record.purpose
+            )
+        }
+    }
+
+    private func isoDate(_ date: Date) -> String {
+        let df = DateFormatter()
+        df.locale = Locale(identifier: "en_US_POSIX")
+        df.timeZone = TimeZone(secondsFromGMT: 0)
+        df.dateFormat = "yyyy-MM-dd"
+        return df.string(from: date)
+    }
+
+    private func displayDate(fromISO isoDateString: String) -> String {
+        let inDf = DateFormatter()
+        inDf.locale = Locale(identifier: "en_US_POSIX")
+        inDf.timeZone = TimeZone(secondsFromGMT: 0)
+        inDf.dateFormat = "yyyy-MM-dd"
+
+        let outDf = DateFormatter()
+        outDf.locale = Locale(identifier: "en_US_POSIX")
+        outDf.timeZone = TimeZone(secondsFromGMT: 0)
+        outDf.dateFormat = "dd MMM"
+
+        if let d = inDf.date(from: isoDateString) {
+            return outDf.string(from: d)
+        }
+        return isoDateString
     }
 }
 

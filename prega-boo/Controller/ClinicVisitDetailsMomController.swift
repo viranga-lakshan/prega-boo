@@ -13,7 +13,7 @@ final class ClinicVisitDetailsMomController {
             addButtonTitle: "ADD",
             listTitle: "Visit Details",
             dateColumnTitle: "Date",
-            timeColumnTitle: "Date",
+            timeColumnTitle: "Time",
             purposeColumnTitle: "Purpose"
         )
     }
