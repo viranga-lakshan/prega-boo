@@ -1,0 +1,1 @@
+@rpath/PregaBooWidgetExtension.debug.dylib

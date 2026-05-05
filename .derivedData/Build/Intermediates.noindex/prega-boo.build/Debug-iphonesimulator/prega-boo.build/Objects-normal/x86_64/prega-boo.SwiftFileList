@@ -12,6 +12,7 @@
 /Users/cobsccomp242p-068/prega-boo/prega-boo/Controller/MidwifeRegistrationController.swift
 /Users/cobsccomp242p-068/prega-boo/prega-boo/Controller/MomAndBabyDetailsController.swift
 /Users/cobsccomp242p-068/prega-boo/prega-boo/Controller/MomDashboardController.swift
+/Users/cobsccomp242p-068/prega-boo/prega-boo/Controller/MomRemindersController.swift
 /Users/cobsccomp242p-068/prega-boo/prega-boo/Controller/OnboardingController.swift
 /Users/cobsccomp242p-068/prega-boo/prega-boo/Controller/SplashController.swift
 /Users/cobsccomp242p-068/prega-boo/prega-boo/Controller/VaccineDetailsMomController.swift
@@ -42,6 +43,9 @@
 /Users/cobsccomp242p-068/prega-boo/prega-boo/Model/MomDashboardModel.swift
 /Users/cobsccomp242p-068/prega-boo/prega-boo/Model/MomListRow.swift
 /Users/cobsccomp242p-068/prega-boo/prega-boo/Model/MomProfile.swift
+/Users/cobsccomp242p-068/prega-boo/prega-boo/Model/MomReminderRecord.swift
+/Users/cobsccomp242p-068/prega-boo/prega-boo/Model/MomRemindersModel.swift
+/Users/cobsccomp242p-068/prega-boo/prega-boo/Model/MomTrackModels.swift
 /Users/cobsccomp242p-068/prega-boo/prega-boo/Model/OnboardingModel.swift
 /Users/cobsccomp242p-068/prega-boo/prega-boo/Model/OnboardingPage.swift
 /Users/cobsccomp242p-068/prega-boo/prega-boo/Model/RegistrationContext.swift
@@ -64,7 +68,13 @@
 /Users/cobsccomp242p-068/prega-boo/prega-boo/Service/MidwifeProfileRepository.swift
 /Users/cobsccomp242p-068/prega-boo/prega-boo/Service/MomHealthAgeFormatting.swift
 /Users/cobsccomp242p-068/prega-boo/prega-boo/Service/MomProfileRepository.swift
+/Users/cobsccomp242p-068/prega-boo/prega-boo/Service/MomRemindersDataService.swift
+/Users/cobsccomp242p-068/prega-boo/prega-boo/Service/MomRemindersLocalStore.swift
+/Users/cobsccomp242p-068/prega-boo/prega-boo/Service/MomRemindersNotificationService.swift
+/Users/cobsccomp242p-068/prega-boo/prega-boo/Service/MomRemindersRepository.swift
+/Users/cobsccomp242p-068/prega-boo/prega-boo/Service/MomReminderVisitScheduling.swift
 /Users/cobsccomp242p-068/prega-boo/prega-boo/Service/MomSessionStore.swift
+/Users/cobsccomp242p-068/prega-boo/prega-boo/Service/MomTrackRepository.swift
 /Users/cobsccomp242p-068/prega-boo/prega-boo/Service/PINAuthStore.swift
 /Users/cobsccomp242p-068/prega-boo/prega-boo/Service/SupabaseAuthService.swift
 /Users/cobsccomp242p-068/prega-boo/prega-boo/Service/SupabaseSecrets.swift
@@ -72,6 +82,7 @@
 /Users/cobsccomp242p-068/prega-boo/prega-boo/Service/UserLocationManager.swift
 /Users/cobsccomp242p-068/prega-boo/prega-boo/Service/UserRoleRepository.swift
 /Users/cobsccomp242p-068/prega-boo/prega-boo/Service/VaccineRecordsRepository.swift
+/Users/cobsccomp242p-068/prega-boo/prega-boo/Service/WidgetSnapshotStore.swift
 /Users/cobsccomp242p-068/prega-boo/prega-boo/View/AppLockScreenView.swift
 /Users/cobsccomp242p-068/prega-boo/prega-boo/View/AssetImage.swift
 /Users/cobsccomp242p-068/prega-boo/prega-boo/View/BabyDetailsView.swift
@@ -91,7 +102,10 @@
 /Users/cobsccomp242p-068/prega-boo/prega-boo/View/MidwifeRegistrationView.swift
 /Users/cobsccomp242p-068/prega-boo/prega-boo/View/MomAndBabyDetailsView.swift
 /Users/cobsccomp242p-068/prega-boo/prega-boo/View/MomDashboardView.swift
+/Users/cobsccomp242p-068/prega-boo/prega-boo/View/MomLibraryView.swift
 /Users/cobsccomp242p-068/prega-boo/prega-boo/View/MomProfileView.swift
+/Users/cobsccomp242p-068/prega-boo/prega-boo/View/MomRemindersView.swift
+/Users/cobsccomp242p-068/prega-boo/prega-boo/View/MomTrackHubView.swift
 /Users/cobsccomp242p-068/prega-boo/prega-boo/View/OnboardingFlowView.swift
 /Users/cobsccomp242p-068/prega-boo/prega-boo/View/OnboardingScreenView.swift
 /Users/cobsccomp242p-068/prega-boo/prega-boo/View/PINPadComponents.swift

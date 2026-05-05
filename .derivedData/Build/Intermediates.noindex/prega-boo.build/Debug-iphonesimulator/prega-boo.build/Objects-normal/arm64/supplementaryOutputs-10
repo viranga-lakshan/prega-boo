@@ -1,0 +1,37 @@
+{
+  "/Users/cobsccomp242p-068/prega-boo/prega-boo/View/MidwifeMomsListView.swift" : {
+    "const-values" : "/Users/cobsccomp242p-068/prega-boo/.derivedData/Build/Intermediates.noindex/prega-boo.build/Debug-iphonesimulator/prega-boo.build/Objects-normal/arm64/MidwifeMomsListView.swiftconstvalues",
+    "dependencies" : "/Users/cobsccomp242p-068/prega-boo/.derivedData/Build/Intermediates.noindex/prega-boo.build/Debug-iphonesimulator/prega-boo.build/Objects-normal/arm64/MidwifeMomsListView.d",
+    "diagnostics" : "/Users/cobsccomp242p-068/prega-boo/.derivedData/Build/Intermediates.noindex/prega-boo.build/Debug-iphonesimulator/prega-boo.build/Objects-normal/arm64/MidwifeMomsListView.dia",
+    "object" : "/Users/cobsccomp242p-068/prega-boo/.derivedData/Build/Intermediates.noindex/prega-boo.build/Debug-iphonesimulator/prega-boo.build/Objects-normal/arm64/MidwifeMomsListView.o",
+    "swift-dependencies" : "/Users/cobsccomp242p-068/prega-boo/.derivedData/Build/Intermediates.noindex/prega-boo.build/Debug-iphonesimulator/prega-boo.build/Objects-normal/arm64/MidwifeMomsListView.swiftdeps"
+  },
+  "/Users/cobsccomp242p-068/prega-boo/prega-boo/View/MidwifeRegistrationView.swift" : {
+    "const-values" : "/Users/cobsccomp242p-068/prega-boo/.derivedData/Build/Intermediates.noindex/prega-boo.build/Debug-iphonesimulator/prega-boo.build/Objects-normal/arm64/MidwifeRegistrationView.swiftconstvalues",
+    "dependencies" : "/Users/cobsccomp242p-068/prega-boo/.derivedData/Build/Intermediates.noindex/prega-boo.build/Debug-iphonesimulator/prega-boo.build/Objects-normal/arm64/MidwifeRegistrationView.d",
+    "diagnostics" : "/Users/cobsccomp242p-068/prega-boo/.derivedData/Build/Intermediates.noindex/prega-boo.build/Debug-iphonesimulator/prega-boo.build/Objects-normal/arm64/MidwifeRegistrationView.dia",
+    "object" : "/Users/cobsccomp242p-068/prega-boo/.derivedData/Build/Intermediates.noindex/prega-boo.build/Debug-iphonesimulator/prega-boo.build/Objects-normal/arm64/MidwifeRegistrationView.o",
+    "swift-dependencies" : "/Users/cobsccomp242p-068/prega-boo/.derivedData/Build/Intermediates.noindex/prega-boo.build/Debug-iphonesimulator/prega-boo.build/Objects-normal/arm64/MidwifeRegistrationView.swiftdeps"
+  },
+  "/Users/cobsccomp242p-068/prega-boo/prega-boo/View/MomAndBabyDetailsView.swift" : {
+    "const-values" : "/Users/cobsccomp242p-068/prega-boo/.derivedData/Build/Intermediates.noindex/prega-boo.build/Debug-iphonesimulator/prega-boo.build/Objects-normal/arm64/MomAndBabyDetailsView.swiftconstvalues",
+    "dependencies" : "/Users/cobsccomp242p-068/prega-boo/.derivedData/Build/Intermediates.noindex/prega-boo.build/Debug-iphonesimulator/prega-boo.build/Objects-normal/arm64/MomAndBabyDetailsView.d",
+    "diagnostics" : "/Users/cobsccomp242p-068/prega-boo/.derivedData/Build/Intermediates.noindex/prega-boo.build/Debug-iphonesimulator/prega-boo.build/Objects-normal/arm64/MomAndBabyDetailsView.dia",
+    "object" : "/Users/cobsccomp242p-068/prega-boo/.derivedData/Build/Intermediates.noindex/prega-boo.build/Debug-iphonesimulator/prega-boo.build/Objects-normal/arm64/MomAndBabyDetailsView.o",
+    "swift-dependencies" : "/Users/cobsccomp242p-068/prega-boo/.derivedData/Build/Intermediates.noindex/prega-boo.build/Debug-iphonesimulator/prega-boo.build/Objects-normal/arm64/MomAndBabyDetailsView.swiftdeps"
+  },
+  "/Users/cobsccomp242p-068/prega-boo/prega-boo/View/MomDashboardView.swift" : {
+    "const-values" : "/Users/cobsccomp242p-068/prega-boo/.derivedData/Build/Intermediates.noindex/prega-boo.build/Debug-iphonesimulator/prega-boo.build/Objects-normal/arm64/MomDashboardView.swiftconstvalues",
+    "dependencies" : "/Users/cobsccomp242p-068/prega-boo/.derivedData/Build/Intermediates.noindex/prega-boo.build/Debug-iphonesimulator/prega-boo.build/Objects-normal/arm64/MomDashboardView.d",
+    "diagnostics" : "/Users/cobsccomp242p-068/prega-boo/.derivedData/Build/Intermediates.noindex/prega-boo.build/Debug-iphonesimulator/prega-boo.build/Objects-normal/arm64/MomDashboardView.dia",
+    "object" : "/Users/cobsccomp242p-068/prega-boo/.derivedData/Build/Intermediates.noindex/prega-boo.build/Debug-iphonesimulator/prega-boo.build/Objects-normal/arm64/MomDashboardView.o",
+    "swift-dependencies" : "/Users/cobsccomp242p-068/prega-boo/.derivedData/Build/Intermediates.noindex/prega-boo.build/Debug-iphonesimulator/prega-boo.build/Objects-normal/arm64/MomDashboardView.swiftdeps"
+  },
+  "/Users/cobsccomp242p-068/prega-boo/prega-boo/View/MomLibraryView.swift" : {
+    "const-values" : "/Users/cobsccomp242p-068/prega-boo/.derivedData/Build/Intermediates.noindex/prega-boo.build/Debug-iphonesimulator/prega-boo.build/Objects-normal/arm64/MomLibraryView.swiftconstvalues",
+    "dependencies" : "/Users/cobsccomp242p-068/prega-boo/.derivedData/Build/Intermediates.noindex/prega-boo.build/Debug-iphonesimulator/prega-boo.build/Objects-normal/arm64/MomLibraryView.d",
+    "diagnostics" : "/Users/cobsccomp242p-068/prega-boo/.derivedData/Build/Intermediates.noindex/prega-boo.build/Debug-iphonesimulator/prega-boo.build/Objects-normal/arm64/MomLibraryView.dia",
+    "object" : "/Users/cobsccomp242p-068/prega-boo/.derivedData/Build/Intermediates.noindex/prega-boo.build/Debug-iphonesimulator/prega-boo.build/Objects-normal/arm64/MomLibraryView.o",
+    "swift-dependencies" : "/Users/cobsccomp242p-068/prega-boo/.derivedData/Build/Intermediates.noindex/prega-boo.build/Debug-iphonesimulator/prega-boo.build/Objects-normal/arm64/MomLibraryView.swiftdeps"
+  }
+}

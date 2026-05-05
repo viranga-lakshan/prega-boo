@@ -23,6 +23,7 @@ final class AppLockManager: ObservableObject {
     private init() {
         lockWhenLeavingApp = UserDefaults.standard.bool(forKey: Keys.lockWhenLeaving)
         preferBiometricUnlock = UserDefaults.standard.bool(forKey: Keys.preferBio)
+        isLocked = PINAuthStore.shared.hasPIN
     }
 
     var isAppLockActive: Bool {

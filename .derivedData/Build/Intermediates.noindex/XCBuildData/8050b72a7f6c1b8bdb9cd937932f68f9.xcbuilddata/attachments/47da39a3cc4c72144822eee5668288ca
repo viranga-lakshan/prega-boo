@@ -1,0 +1,39 @@
+{
+  "" : {
+    "diagnostics" : "/Users/cobsccomp242p-068/prega-boo/.derivedData/Build/Intermediates.noindex/prega-boo.build/Debug-iphonesimulator/PregaBooWidgetExtension.build/Objects-normal/x86_64/PregaBooWidgetExtension-primary.dia",
+    "emit-module-dependencies" : "/Users/cobsccomp242p-068/prega-boo/.derivedData/Build/Intermediates.noindex/prega-boo.build/Debug-iphonesimulator/PregaBooWidgetExtension.build/Objects-normal/x86_64/PregaBooWidgetExtension-primary-emit-module.d",
+    "emit-module-diagnostics" : "/Users/cobsccomp242p-068/prega-boo/.derivedData/Build/Intermediates.noindex/prega-boo.build/Debug-iphonesimulator/PregaBooWidgetExtension.build/Objects-normal/x86_64/PregaBooWidgetExtension-primary-emit-module.dia",
+    "pch" : "/Users/cobsccomp242p-068/prega-boo/.derivedData/Build/Intermediates.noindex/prega-boo.build/Debug-iphonesimulator/PregaBooWidgetExtension.build/Objects-normal/x86_64/PregaBooWidgetExtension-primary-Bridging-header.pch",
+    "swift-dependencies" : "/Users/cobsccomp242p-068/prega-boo/.derivedData/Build/Intermediates.noindex/prega-boo.build/Debug-iphonesimulator/PregaBooWidgetExtension.build/Objects-normal/x86_64/PregaBooWidgetExtension-primary.swiftdeps"
+  },
+  "/Users/cobsccomp242p-068/prega-boo/.derivedData/Build/Intermediates.noindex/prega-boo.build/Debug-iphonesimulator/PregaBooWidgetExtension.build/DerivedSources/GeneratedAssetSymbols.swift" : {
+    "const-values" : "/Users/cobsccomp242p-068/prega-boo/.derivedData/Build/Intermediates.noindex/prega-boo.build/Debug-iphonesimulator/PregaBooWidgetExtension.build/Objects-normal/x86_64/GeneratedAssetSymbols.swiftconstvalues",
+    "dependencies" : "/Users/cobsccomp242p-068/prega-boo/.derivedData/Build/Intermediates.noindex/prega-boo.build/Debug-iphonesimulator/PregaBooWidgetExtension.build/Objects-normal/x86_64/GeneratedAssetSymbols.d",
+    "diagnostics" : "/Users/cobsccomp242p-068/prega-boo/.derivedData/Build/Intermediates.noindex/prega-boo.build/Debug-iphonesimulator/PregaBooWidgetExtension.build/Objects-normal/x86_64/GeneratedAssetSymbols.dia",
+    "index-unit-output-path" : "/prega-boo.build/Debug-iphonesimulator/PregaBooWidgetExtension.build/Objects-normal/x86_64/GeneratedAssetSymbols.o",
+    "llvm-bc" : "/Users/cobsccomp242p-068/prega-boo/.derivedData/Build/Intermediates.noindex/prega-boo.build/Debug-iphonesimulator/PregaBooWidgetExtension.build/Objects-normal/x86_64/GeneratedAssetSymbols.bc",
+    "object" : "/Users/cobsccomp242p-068/prega-boo/.derivedData/Build/Intermediates.noindex/prega-boo.build/Debug-iphonesimulator/PregaBooWidgetExtension.build/Objects-normal/x86_64/GeneratedAssetSymbols.o",
+    "swift-dependencies" : "/Users/cobsccomp242p-068/prega-boo/.derivedData/Build/Intermediates.noindex/prega-boo.build/Debug-iphonesimulator/PregaBooWidgetExtension.build/Objects-normal/x86_64/GeneratedAssetSymbols.swiftdeps",
+    "swiftmodule" : "/Users/cobsccomp242p-068/prega-boo/.derivedData/Build/Intermediates.noindex/prega-boo.build/Debug-iphonesimulator/PregaBooWidgetExtension.build/Objects-normal/x86_64/GeneratedAssetSymbols~partial.swiftmodule"
+  },
+  "/Users/cobsccomp242p-068/prega-boo/PregaBooWidget/PregaBooWidget.swift" : {
+    "const-values" : "/Users/cobsccomp242p-068/prega-boo/.derivedData/Build/Intermediates.noindex/prega-boo.build/Debug-iphonesimulator/PregaBooWidgetExtension.build/Objects-normal/x86_64/PregaBooWidget.swiftconstvalues",
+    "dependencies" : "/Users/cobsccomp242p-068/prega-boo/.derivedData/Build/Intermediates.noindex/prega-boo.build/Debug-iphonesimulator/PregaBooWidgetExtension.build/Objects-normal/x86_64/PregaBooWidget.d",
+    "diagnostics" : "/Users/cobsccomp242p-068/prega-boo/.derivedData/Build/Intermediates.noindex/prega-boo.build/Debug-iphonesimulator/PregaBooWidgetExtension.build/Objects-normal/x86_64/PregaBooWidget.dia",
+    "index-unit-output-path" : "/prega-boo.build/Debug-iphonesimulator/PregaBooWidgetExtension.build/Objects-normal/x86_64/PregaBooWidget.o",
+    "llvm-bc" : "/Users/cobsccomp242p-068/prega-boo/.derivedData/Build/Intermediates.noindex/prega-boo.build/Debug-iphonesimulator/PregaBooWidgetExtension.build/Objects-normal/x86_64/PregaBooWidget.bc",
+    "object" : "/Users/cobsccomp242p-068/prega-boo/.derivedData/Build/Intermediates.noindex/prega-boo.build/Debug-iphonesimulator/PregaBooWidgetExtension.build/Objects-normal/x86_64/PregaBooWidget.o",
+    "swift-dependencies" : "/Users/cobsccomp242p-068/prega-boo/.derivedData/Build/Intermediates.noindex/prega-boo.build/Debug-iphonesimulator/PregaBooWidgetExtension.build/Objects-normal/x86_64/PregaBooWidget.swiftdeps",
+    "swiftmodule" : "/Users/cobsccomp242p-068/prega-boo/.derivedData/Build/Intermediates.noindex/prega-boo.build/Debug-iphonesimulator/PregaBooWidgetExtension.build/Objects-normal/x86_64/PregaBooWidget~partial.swiftmodule"
+  },
+  "/Users/cobsccomp242p-068/prega-boo/PregaBooWidget/PregaBooWidgetBundle.swift" : {
+    "const-values" : "/Users/cobsccomp242p-068/prega-boo/.derivedData/Build/Intermediates.noindex/prega-boo.build/Debug-iphonesimulator/PregaBooWidgetExtension.build/Objects-normal/x86_64/PregaBooWidgetBundle.swiftconstvalues",
+    "dependencies" : "/Users/cobsccomp242p-068/prega-boo/.derivedData/Build/Intermediates.noindex/prega-boo.build/Debug-iphonesimulator/PregaBooWidgetExtension.build/Objects-normal/x86_64/PregaBooWidgetBundle.d",
+    "diagnostics" : "/Users/cobsccomp242p-068/prega-boo/.derivedData/Build/Intermediates.noindex/prega-boo.build/Debug-iphonesimulator/PregaBooWidgetExtension.build/Objects-normal/x86_64/PregaBooWidgetBundle.dia",
+    "index-unit-output-path" : "/prega-boo.build/Debug-iphonesimulator/PregaBooWidgetExtension.build/Objects-normal/x86_64/PregaBooWidgetBundle.o",
+    "llvm-bc" : "/Users/cobsccomp242p-068/prega-boo/.derivedData/Build/Intermediates.noindex/prega-boo.build/Debug-iphonesimulator/PregaBooWidgetExtension.build/Objects-normal/x86_64/PregaBooWidgetBundle.bc",
+    "object" : "/Users/cobsccomp242p-068/prega-boo/.derivedData/Build/Intermediates.noindex/prega-boo.build/Debug-iphonesimulator/PregaBooWidgetExtension.build/Objects-normal/x86_64/PregaBooWidgetBundle.o",
+    "swift-dependencies" : "/Users/cobsccomp242p-068/prega-boo/.derivedData/Build/Intermediates.noindex/prega-boo.build/Debug-iphonesimulator/PregaBooWidgetExtension.build/Objects-normal/x86_64/PregaBooWidgetBundle.swiftdeps",
+    "swiftmodule" : "/Users/cobsccomp242p-068/prega-boo/.derivedData/Build/Intermediates.noindex/prega-boo.build/Debug-iphonesimulator/PregaBooWidgetExtension.build/Objects-normal/x86_64/PregaBooWidgetBundle~partial.swiftmodule"
+  }
+}

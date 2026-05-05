@@ -1,0 +1,56 @@
+{
+  "source": "/Users/cobsccomp242p-068/prega-boo/PregaBooWidget/PregaBooWidget.swift",
+  "tables": {
+    "Localizable": [
+      {
+        "comment": "",
+        "key": "Prega Boo Summary",
+        "location": {
+          "startingColumn": 35,
+          "startingLine": 53
+        }
+      },
+      {
+        "comment": "",
+        "key": "Quick mom summary and tracker reminder.",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 54
+        }
+      },
+      {
+        "comment": "",
+        "key": "Prega Boo",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 65
+        }
+      },
+      {
+        "comment": "",
+        "key": "Prega Boo",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 84
+        }
+      },
+      {
+        "comment": "",
+        "key": "Open app once",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 87
+        }
+      },
+      {
+        "comment": "",
+        "key": "Widget content appears after dashboard loads.",
+        "location": {
+          "startingColumn": 22,
+          "startingLine": 89
+        }
+      }
+    ]
+  },
+  "version": 1
+}

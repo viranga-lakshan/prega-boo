@@ -10,6 +10,7 @@ private enum MomDashboardTab: Hashable {
 struct MomDashboardView: View {
     let model: MomDashboardModel
 
+    @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var appLock: AppLockManager
     @EnvironmentObject private var momSession: MomSessionStore
     @Environment(\.scenePhase) private var scenePhase
@@ -18,6 +19,7 @@ struct MomDashboardView: View {
     @State private var showMomAndBabyDetails = false
     @State private var showReminders = false
     @State private var showLibrary = false
+    @State private var showMandatoryPINSetup = false
 
     var body: some View {
         ZStack {
@@ -32,9 +34,10 @@ struct MomDashboardView: View {
                     case .map:
                         CareFinderView(accentColor: model.accentColor)
                     case .track:
-                        dashboardPlaceholder(
-                            title: "Track",
-                            message: "Appointments and milestones will appear here."
+                        MomTrackHubView(
+                            accentColor: model.accentColor,
+                            backgroundColor: model.backgroundColor,
+                            session: momSession.session
                         )
                     case .profile:
                         MomProfileView(
@@ -61,6 +64,38 @@ struct MomDashboardView: View {
             if phase == .background {
                 appLock.sceneDidEnterBackground()
             }
+        }
+        .onChange(of: momSession.session) { _, session in
+            if session == nil {
+                dismiss()
+            } else {
+                enforcePINRequirement()
+            }
+        }
+        .onAppear {
+            enforcePINRequirement()
+        }
+        .task {
+            let name: String
+            let district: String
+            if let session = momSession.session,
+               let profile = try? await MomProfileRepository().fetchOwnProfile(userId: session.userId, accessToken: session.accessToken) {
+                name = profile.fullName
+                district = profile.district
+            } else {
+                name = "Mom"
+                district = "Sri Lanka"
+            }
+            WidgetSnapshotStore.publishForDashboard(name: name, district: district)
+        }
+        .sheet(isPresented: $showMandatoryPINSetup) {
+            PINSetupSheetView(accentColor: model.accentColor, isMandatory: true) {
+                showMandatoryPINSetup = false
+                appLock.lockWhenLeavingApp = true
+                appLock.preferBiometricUnlock = false
+            }
+            .interactiveDismissDisabled(true)
+            .presentationDetents([.large])
         }
         .background(
             NavigationLink(
@@ -91,6 +126,14 @@ struct MomDashboardView: View {
                 EmptyView()
             }
         )
+    }
+
+    private func enforcePINRequirement() {
+        guard momSession.session != nil else {
+            showMandatoryPINSetup = false
+            return
+        }
+        showMandatoryPINSetup = !PINAuthStore.shared.hasPIN
     }
 
     private var homeContent: some View {

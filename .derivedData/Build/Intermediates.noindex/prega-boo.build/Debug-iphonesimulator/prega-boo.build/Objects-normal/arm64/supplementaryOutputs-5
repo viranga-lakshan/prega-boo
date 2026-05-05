@@ -1,0 +1,30 @@
+{
+  "/Users/cobsccomp242p-068/prega-boo/prega-boo/Service/MomProfileRepository.swift" : {
+    "const-values" : "/Users/cobsccomp242p-068/prega-boo/.derivedData/Build/Intermediates.noindex/prega-boo.build/Debug-iphonesimulator/prega-boo.build/Objects-normal/arm64/MomProfileRepository.swiftconstvalues",
+    "dependencies" : "/Users/cobsccomp242p-068/prega-boo/.derivedData/Build/Intermediates.noindex/prega-boo.build/Debug-iphonesimulator/prega-boo.build/Objects-normal/arm64/MomProfileRepository.d",
+    "diagnostics" : "/Users/cobsccomp242p-068/prega-boo/.derivedData/Build/Intermediates.noindex/prega-boo.build/Debug-iphonesimulator/prega-boo.build/Objects-normal/arm64/MomProfileRepository.dia",
+    "object" : "/Users/cobsccomp242p-068/prega-boo/.derivedData/Build/Intermediates.noindex/prega-boo.build/Debug-iphonesimulator/prega-boo.build/Objects-normal/arm64/MomProfileRepository.o",
+    "swift-dependencies" : "/Users/cobsccomp242p-068/prega-boo/.derivedData/Build/Intermediates.noindex/prega-boo.build/Debug-iphonesimulator/prega-boo.build/Objects-normal/arm64/MomProfileRepository.swiftdeps"
+  },
+  "/Users/cobsccomp242p-068/prega-boo/prega-boo/Service/MomRemindersDataService.swift" : {
+    "const-values" : "/Users/cobsccomp242p-068/prega-boo/.derivedData/Build/Intermediates.noindex/prega-boo.build/Debug-iphonesimulator/prega-boo.build/Objects-normal/arm64/MomRemindersDataService.swiftconstvalues",
+    "dependencies" : "/Users/cobsccomp242p-068/prega-boo/.derivedData/Build/Intermediates.noindex/prega-boo.build/Debug-iphonesimulator/prega-boo.build/Objects-normal/arm64/MomRemindersDataService.d",
+    "diagnostics" : "/Users/cobsccomp242p-068/prega-boo/.derivedData/Build/Intermediates.noindex/prega-boo.build/Debug-iphonesimulator/prega-boo.build/Objects-normal/arm64/MomRemindersDataService.dia",
+    "object" : "/Users/cobsccomp242p-068/prega-boo/.derivedData/Build/Intermediates.noindex/prega-boo.build/Debug-iphonesimulator/prega-boo.build/Objects-normal/arm64/MomRemindersDataService.o",
+    "swift-dependencies" : "/Users/cobsccomp242p-068/prega-boo/.derivedData/Build/Intermediates.noindex/prega-boo.build/Debug-iphonesimulator/prega-boo.build/Objects-normal/arm64/MomRemindersDataService.swiftdeps"
+  },
+  "/Users/cobsccomp242p-068/prega-boo/prega-boo/Service/MomRemindersLocalStore.swift" : {
+    "const-values" : "/Users/cobsccomp242p-068/prega-boo/.derivedData/Build/Intermediates.noindex/prega-boo.build/Debug-iphonesimulator/prega-boo.build/Objects-normal/arm64/MomRemindersLocalStore.swiftconstvalues",
+    "dependencies" : "/Users/cobsccomp242p-068/prega-boo/.derivedData/Build/Intermediates.noindex/prega-boo.build/Debug-iphonesimulator/prega-boo.build/Objects-normal/arm64/MomRemindersLocalStore.d",
+    "diagnostics" : "/Users/cobsccomp242p-068/prega-boo/.derivedData/Build/Intermediates.noindex/prega-boo.build/Debug-iphonesimulator/prega-boo.build/Objects-normal/arm64/MomRemindersLocalStore.dia",
+    "object" : "/Users/cobsccomp242p-068/prega-boo/.derivedData/Build/Intermediates.noindex/prega-boo.build/Debug-iphonesimulator/prega-boo.build/Objects-normal/arm64/MomRemindersLocalStore.o",
+    "swift-dependencies" : "/Users/cobsccomp242p-068/prega-boo/.derivedData/Build/Intermediates.noindex/prega-boo.build/Debug-iphonesimulator/prega-boo.build/Objects-normal/arm64/MomRemindersLocalStore.swiftdeps"
+  },
+  "/Users/cobsccomp242p-068/prega-boo/prega-boo/Service/MomRemindersNotificationService.swift" : {
+    "const-values" : "/Users/cobsccomp242p-068/prega-boo/.derivedData/Build/Intermediates.noindex/prega-boo.build/Debug-iphonesimulator/prega-boo.build/Objects-normal/arm64/MomRemindersNotificationService.swiftconstvalues",
+    "dependencies" : "/Users/cobsccomp242p-068/prega-boo/.derivedData/Build/Intermediates.noindex/prega-boo.build/Debug-iphonesimulator/prega-boo.build/Objects-normal/arm64/MomRemindersNotificationService.d",
+    "diagnostics" : "/Users/cobsccomp242p-068/prega-boo/.derivedData/Build/Intermediates.noindex/prega-boo.build/Debug-iphonesimulator/prega-boo.build/Objects-normal/arm64/MomRemindersNotificationService.dia",
+    "object" : "/Users/cobsccomp242p-068/prega-boo/.derivedData/Build/Intermediates.noindex/prega-boo.build/Debug-iphonesimulator/prega-boo.build/Objects-normal/arm64/MomRemindersNotificationService.o",
+    "swift-dependencies" : "/Users/cobsccomp242p-068/prega-boo/.derivedData/Build/Intermediates.noindex/prega-boo.build/Debug-iphonesimulator/prega-boo.build/Objects-normal/arm64/MomRemindersNotificationService.swiftdeps"
+  }
+}

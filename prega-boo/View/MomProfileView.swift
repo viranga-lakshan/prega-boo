@@ -166,21 +166,23 @@ struct MomProfileView: View {
             }
             .tint(dashboardModel.accentColor)
 
-            if BiometricAuthService.canUseBiometrics {
-                Toggle(isOn: biometricBinding) {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("Use \(BiometricAuthService.biometricTypeDescription())")
-                            .font(.system(size: 16, weight: .semibold))
-                            .foregroundStyle(Color.black.opacity(0.78))
-                        Text("Quick unlock when app lock is on. PIN always works as backup.")
-                            .font(.system(size: 13, weight: .medium))
-                            .foregroundStyle(Color.black.opacity(0.4))
-                    }
+            Toggle(isOn: biometricBinding) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Use \(BiometricAuthService.biometricTypeDescription())")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundStyle(Color.black.opacity(0.78))
+                    Text(
+                        BiometricAuthService.canUseBiometrics
+                        ? "Quick unlock when app lock is on. PIN always works as backup."
+                        : "Face ID / Touch ID is unavailable on this device right now."
+                    )
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundStyle(Color.black.opacity(0.4))
                 }
-                .tint(dashboardModel.accentColor)
-                .disabled(!PINAuthStore.shared.hasPIN)
-                .opacity(PINAuthStore.shared.hasPIN ? 1 : 0.45)
             }
+            .tint(dashboardModel.accentColor)
+            .disabled(!PINAuthStore.shared.hasPIN || !BiometricAuthService.canUseBiometrics)
+            .opacity((PINAuthStore.shared.hasPIN && BiometricAuthService.canUseBiometrics) ? 1 : 0.45)
 
             VStack(alignment: .leading, spacing: 8) {
                 Button {
@@ -246,10 +248,27 @@ struct MomProfileView: View {
                     localAlert = "Set a PIN before using biometrics."
                     return
                 }
+                guard BiometricAuthService.canUseBiometrics else {
+                    localAlert = "Face ID / Touch ID is unavailable on this device."
+                    appLock.preferBiometricUnlock = false
+                    return
+                }
                 if newValue {
-                    appLock.preferBiometricUnlock = true
-                    if !appLock.lockWhenLeavingApp {
-                        appLock.lockWhenLeavingApp = true
+                    Task {
+                        let verified = await BiometricAuthService.authenticate(
+                            reason: "Enable \(BiometricAuthService.biometricTypeDescription()) for app unlock"
+                        )
+                        await MainActor.run {
+                            if verified {
+                                appLock.preferBiometricUnlock = true
+                                if !appLock.lockWhenLeavingApp {
+                                    appLock.lockWhenLeavingApp = true
+                                }
+                            } else {
+                                appLock.preferBiometricUnlock = false
+                                localAlert = "Biometric verification failed. Face ID / Touch ID was not enabled."
+                            }
+                        }
                     }
                 } else {
                     appLock.preferBiometricUnlock = false
@@ -305,6 +324,7 @@ struct MomProfileView: View {
 
 struct PINSetupSheetView: View {
     let accentColor: Color
+    var isMandatory: Bool = false
     var onDone: () -> Void
 
     @Environment(\.dismiss) private var dismiss
@@ -330,7 +350,15 @@ struct PINSetupSheetView: View {
                         .padding(.horizontal)
                 }
 
-                PINPadView(accentColor: accentColor, pin: $pinEntry, maxDigits: 4) { entered in
+                PINPadView(
+                    accentColor: accentColor,
+                    pin: $pinEntry,
+                    maxDigits: 4,
+                    digitTextColor: Color.black.opacity(0.72),
+                    digitBackgroundColor: Color.black.opacity(0.06),
+                    emptyDotColor: Color.black.opacity(0.18),
+                    deleteIconColor: Color.black.opacity(0.5)
+                ) { entered in
                     if step == 0 {
                         pinFirst = entered
                         pinEntry = ""
@@ -361,9 +389,11 @@ struct PINSetupSheetView: View {
             }
             .background(Color(red: 0.98, green: 0.96, blue: 0.97))
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") {
-                        dismiss()
+                if !isMandatory {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button("Cancel") {
+                            dismiss()
+                        }
                     }
                 }
             }

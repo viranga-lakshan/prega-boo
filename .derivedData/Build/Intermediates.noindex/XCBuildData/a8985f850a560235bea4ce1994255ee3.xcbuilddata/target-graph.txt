@@ -1,0 +1,4 @@
+Target dependency graph (2 targets)
+Target 'prega-boo' in project 'prega-boo'
+➜ Explicit dependency on target 'PregaBooWidgetExtension' in project 'prega-boo'
+Target 'PregaBooWidgetExtension' in project 'prega-boo' (no dependencies)

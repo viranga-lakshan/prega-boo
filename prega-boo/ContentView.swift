@@ -8,10 +8,21 @@
 import SwiftUI
 
 struct ContentView: View {
+    @StateObject private var momSession = MomSessionStore.shared
+    @StateObject private var appLock = AppLockManager.shared
+
     var body: some View {
-        OnboardingFlowView()
-            .environmentObject(MomSessionStore.shared)
-            .environmentObject(AppLockManager.shared)
+        Group {
+            if momSession.session != nil {
+                NavigationStack {
+                    MomDashboardView(model: MomDashboardController().loadModel())
+                }
+            } else {
+                OnboardingFlowView()
+            }
+        }
+        .environmentObject(momSession)
+        .environmentObject(appLock)
     }
 }
 

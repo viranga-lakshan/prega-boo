@@ -46,7 +46,7 @@ struct AppLockScreenView: View {
                         Task { await runBiometric() }
                     } label: {
                         HStack(spacing: 10) {
-                            Image(systemName: "faceid")
+                            Image(systemName: BiometricAuthService.biometricSystemImageName())
                                 .font(.system(size: 20, weight: .semibold))
                             Text("Unlock with \(bioTitle)")
                                 .font(.system(size: 16, weight: .bold))
