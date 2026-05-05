@@ -39,4 +39,17 @@ final class MomProfileRepository {
         let decoded = try JSONDecoder().decode([MomProfile].self, from: data)
         return decoded.first
     }
+
+    func uploadProfilePhoto(userId: UUID, photoData: Data, accessToken: String) async throws -> String {
+        let fileName = "\(UUID().uuidString).jpg"
+        let path = "\(userId.uuidString)/\(fileName)"
+        try await supabase.upload(
+            bucket: "mom-photos",
+            path: path,
+            data: photoData,
+            contentType: "image/jpeg",
+            accessToken: accessToken
+        )
+        return path
+    }
 }

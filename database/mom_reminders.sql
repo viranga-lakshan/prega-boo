@@ -1,0 +1,2 @@
+-- Reference copy of mom_reminders (see supabase/migrations/20260505140000_create_mom_reminders.sql).
+-- Apply via Supabase CLI migrations in production.

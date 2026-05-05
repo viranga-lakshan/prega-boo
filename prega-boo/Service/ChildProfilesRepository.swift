@@ -11,7 +11,7 @@ final class ChildProfilesRepository {
         let (data, _) = try await supabase.request(
             path: "/rest/v1/child_profiles",
             queryItems: [
-                URLQueryItem(name: "select", value: "id,mom_user_id,full_name,birth_date"),
+                URLQueryItem(name: "select", value: "id,mom_user_id,full_name,birth_date,id_photo_path"),
                 URLQueryItem(name: "mom_user_id", value: "eq.\(momUserId.uuidString)"),
                 URLQueryItem(name: "order", value: "created_at.desc")
             ],
@@ -21,6 +21,23 @@ final class ChildProfilesRepository {
         )
 
         return try JSONDecoder().decode([ChildProfile].self, from: data)
+    }
+
+    func fetchChildPhoto(path: String, accessToken: String) async throws -> Data {
+        let encodedPath = path
+            .split(separator: "/", omittingEmptySubsequences: false)
+            .map { part -> String in
+                String(part).addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? String(part)
+            }
+            .joined(separator: "/")
+
+        let (data, _) = try await supabase.request(
+            path: "/storage/v1/object/authenticated/child-photos/\(encodedPath)",
+            headers: [
+                "Authorization": "Bearer \(accessToken)"
+            ]
+        )
+        return data
     }
 
     func insertChild(
@@ -36,7 +53,9 @@ final class ChildProfilesRepository {
     ) async throws {
         var finalPhotoPath = idPhotoPath
 
-        // If we have photo data, upload it first
+        // If we have photo data, upload it first.
+        // Do not silently ignore upload errors; otherwise the child row saves without `id_photo_path`
+        // and it looks like the photo "didn't go to Supabase".
         if let photoData = photoData {
             let fileName = "\(UUID().uuidString).jpg"
             let storagePath = "\(momUserId.uuidString)/\(fileName)"
@@ -51,9 +70,14 @@ final class ChildProfilesRepository {
                 )
                 finalPhotoPath = storagePath
             } catch {
-                // Photo is optional. If upload fails (policy/content-type/network),
-                // still save the child profile without an image path.
-                finalPhotoPath = idPhotoPath
+                if let http = error as? SupabaseServiceError,
+                   case .httpError(let status, let body) = http {
+                    throw SupabaseServiceError.httpError(
+                        status: status,
+                        body: "[Storage upload child-photos] \(body)"
+                    )
+                }
+                throw error
             }
         }
 

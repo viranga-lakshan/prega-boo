@@ -7,4 +7,5 @@ struct RegistrationContext: Hashable {
     var fullName: String
     var contactNumber: String
     var district: String
+    var photoPath: String?
 }

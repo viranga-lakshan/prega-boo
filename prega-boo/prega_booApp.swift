@@ -9,6 +9,10 @@ import SwiftUI
 
 @main
 struct prega_booApp: App {
+    init() {
+        MomRemindersNotificationService.shared.configure()
+    }
+
     var body: some Scene {
         WindowGroup {
             ContentView()

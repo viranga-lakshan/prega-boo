@@ -1,3 +1,4 @@
+import PhotosUI
 import SwiftUI
 
 struct ManualRegistrationView: View {
@@ -10,6 +11,9 @@ struct ManualRegistrationView: View {
     @State private var password = ""
     @State private var confirmPassword = ""
     @State private var selectedDistrict = ""
+    @State private var selectedPhotoItem: PhotosPickerItem?
+    @State private var selectedPhoto: Image?
+    @State private var selectedPhotoData: Data?
 
     @State private var isSubmitting = false
     @State private var errorMessage: String?
@@ -73,6 +77,18 @@ struct ManualRegistrationView: View {
             Button("OK", role: .cancel) {}
         } message: {
             Text(errorMessage ?? "")
+        }
+        .onChange(of: selectedPhotoItem) { _, newValue in
+            guard let newValue else { return }
+            Task {
+                if let data = try? await newValue.loadTransferable(type: Data.self),
+                   let uiImage = UIImage(data: data) {
+                    await MainActor.run {
+                        selectedPhoto = Image(uiImage: uiImage)
+                        selectedPhotoData = uiImage.jpegData(compressionQuality: 0.85) ?? data
+                    }
+                }
+            }
         }
     }
 
@@ -144,6 +160,10 @@ struct ManualRegistrationView: View {
 
             locationDropdown
 
+            Spacer().frame(height: 18)
+
+            photoPicker
+
             Spacer().frame(height: 24)
 
             Button(action: submitRegistration) {
@@ -175,6 +195,41 @@ struct ManualRegistrationView: View {
                 )
             ) {
                 EmptyView()
+            }
+        }
+    }
+
+    private var photoPicker: some View {
+        PhotosPicker(selection: $selectedPhotoItem, matching: .images) {
+            HStack(spacing: 12) {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 10, style: .continuous)
+                        .fill(Color.black.opacity(0.06))
+                        .frame(width: 48, height: 48)
+                    if let selectedPhoto {
+                        selectedPhoto
+                            .resizable()
+                            .scaledToFill()
+                            .frame(width: 48, height: 48)
+                            .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                    } else {
+                        Image(systemName: "camera.fill")
+                            .font(.system(size: 16, weight: .semibold))
+                            .foregroundStyle(Color.black.opacity(0.45))
+                    }
+                }
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Profile photo (optional)")
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundStyle(Color.black.opacity(0.75))
+                    Text(selectedPhoto == nil ? "Tap to add photo" : "Photo selected")
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundStyle(Color.black.opacity(0.45))
+                }
+                Spacer()
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 12, weight: .bold))
+                    .foregroundStyle(Color.black.opacity(0.3))
             }
         }
     }
@@ -233,13 +288,30 @@ struct ManualRegistrationView: View {
                     accessToken: session.accessToken
                 )
 
+                var photoPath: String?
+                if let photoData = selectedPhotoData {
+                    do {
+                        photoPath = try await MomProfileRepository().uploadProfilePhoto(
+                            userId: session.user.id,
+                            photoData: photoData,
+                            accessToken: session.accessToken
+                        )
+                    } catch SupabaseServiceError.httpError(let status, let body) {
+                        throw SupabaseServiceError.httpError(
+                            status: status,
+                            body: "[Storage upload mom-photos] \(body)"
+                        )
+                    }
+                }
+
                 let profile = MomProfile(
                     id: nil,
                     userId: session.user.id,
                     fullName: trimmedName,
                     contactNumber: "\(model.countryCode)\(trimmedContact)",
                     district: selectedDistrict,
-                    lmpDate: nil
+                    lmpDate: nil,
+                    photoPath: photoPath
                 )
 
                 try await MomProfileRepository().upsert(profile: profile, accessToken: session.accessToken)
@@ -249,7 +321,8 @@ struct ManualRegistrationView: View {
                     accessToken: session.accessToken,
                     fullName: trimmedName,
                     contactNumber: "\(model.countryCode)\(trimmedContact)",
-                    district: selectedDistrict
+                    district: selectedDistrict,
+                    photoPath: photoPath
                 )
             } catch let authError as SupabaseAuthError {
                 switch authError {

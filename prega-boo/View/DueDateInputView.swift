@@ -92,7 +92,8 @@ struct DueDateInputView: View {
                         fullName: registration.fullName,
                         contactNumber: registration.contactNumber,
                         district: registration.district,
-                        lmpDate: lmpString
+                        lmpDate: lmpString,
+                        photoPath: registration.photoPath
                     )
 
                     try await MomProfileRepository().upsert(profile: profile, accessToken: registration.accessToken)

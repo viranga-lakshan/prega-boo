@@ -38,8 +38,8 @@ struct GrowthTrackingMomView: View {
     @State private var recentWeights: [Double] = []
 
     @State private var rows: [GrowthRow] = [
-        GrowthRow(dateText: "Today", weightText: "3.2", heightText: "50", notesPreview: "First Smile"),
-        GrowthRow(dateText: "Yesterday", weightText: "3.1", heightText: "50", notesPreview: "")
+        GrowthRow(id: UUID(), dateText: "Today", weightText: "3.2", heightText: "50", notesPreview: "First Smile"),
+        GrowthRow(id: UUID(), dateText: "Yesterday", weightText: "3.1", heightText: "50", notesPreview: "")
     ]
 
     @State private var momGrowthSource: [GrowthRecord] = []
@@ -91,6 +91,9 @@ struct GrowthTrackingMomView: View {
 
                     chartCard
 
+                    growthHistoryTableSection(showsDisclosure: true)
+                        .padding(.top, 4)
+
                     newEntryRow
                         .padding(.top, 2)
 
@@ -104,8 +107,6 @@ struct GrowthTrackingMomView: View {
 
                     saveButton
                         .padding(.top, 8)
-
-                    listSection
                         .padding(.bottom, 28)
                 }
                 .padding(.horizontal, 18)
@@ -299,10 +300,74 @@ struct GrowthTrackingMomView: View {
                 .padding(.horizontal, 12)
                 .padding(.vertical, 14)
             }
+
+            if !sortedGrowthRowsNewestFirst.isEmpty {
+                VStack(alignment: .leading, spacing: 10) {
+                    Text("Recorded measurements")
+                        .font(.system(size: 14, weight: .bold, design: .rounded))
+                        .foregroundStyle(Color.black.opacity(0.5))
+
+                    momReadOnlyTableHeaderRow
+
+                    VStack(spacing: 0) {
+                        ForEach(Array(sortedGrowthRowsNewestFirst.enumerated()), id: \.element.id) { idx, row in
+                            momReadOnlyGrowthTableRow(row)
+                            if idx < sortedGrowthRowsNewestFirst.count - 1 {
+                                Divider().opacity(0.2)
+                            }
+                        }
+                    }
+                }
+                .padding(.top, 8)
+            }
         }
         .padding(18)
         .background(Color.white.opacity(0.5))
         .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+    }
+
+    private var momReadOnlyTableHeaderRow: some View {
+        HStack {
+            Text("Date")
+                .frame(maxWidth: .infinity, alignment: .leading)
+            Text("Weight")
+                .frame(width: 72, alignment: .leading)
+            Text("Height")
+                .frame(width: 72, alignment: .leading)
+        }
+        .font(.system(size: 11, weight: .bold))
+        .foregroundStyle(Color.black.opacity(0.38))
+        .padding(.horizontal, 4)
+        .padding(.bottom, 4)
+    }
+
+    private func momReadOnlyGrowthTableRow(_ row: GrowthRow) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            HStack(alignment: .top) {
+                Text(row.dateText)
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(Color.black.opacity(0.78))
+                    .frame(maxWidth: .infinity, alignment: .leading)
+
+                Text("\(row.weightText) kg")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(Color.black.opacity(0.78))
+                    .frame(width: 72, alignment: .leading)
+
+                Text("\(row.heightText) cm")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(Color.black.opacity(0.78))
+                    .frame(width: 72, alignment: .leading)
+            }
+            if !row.notesPreview.isEmpty {
+                Text(row.notesPreview)
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(Color.black.opacity(0.42))
+                    .lineLimit(2)
+            }
+        }
+        .padding(.vertical, 10)
+        .padding(.horizontal, 4)
     }
 
     private func curveToggleButton(title: String, isOn: Bool, action: @escaping () -> Void) -> some View {
@@ -330,6 +395,46 @@ struct GrowthTrackingMomView: View {
             return childGrowthSource.sorted { $0.measuredOn < $1.measuredOn }.map { $0.heightCm }
         }
         return momGrowthSource.sorted { $0.measuredOn < $1.measuredOn }.map { $0.heightCm }
+    }
+
+    /// Newest first for tables under the chart.
+    private var sortedGrowthRowsNewestFirst: [GrowthRow] {
+        if childId != nil {
+            return childGrowthSource
+                .sorted { $0.measuredOn > $1.measuredOn }
+                .map { growthRow(from: $0) }
+        }
+        return momGrowthSource
+            .sorted { $0.measuredOn > $1.measuredOn }
+            .map { growthRow(from: $0) }
+    }
+
+    private func combinedMilestoneNotes(milestones: String?, notes: String?) -> String {
+        let m = milestones?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        let n = notes?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        if m.isEmpty { return n }
+        if n.isEmpty { return m }
+        return "\(m) · \(n)"
+    }
+
+    private func growthRow(from record: GrowthRecord) -> GrowthRow {
+        GrowthRow(
+            id: record.id,
+            dateText: displayDate(fromISO: record.measuredOn),
+            weightText: String(format: "%.1f", record.weightKg),
+            heightText: String(format: "%.0f", record.heightCm),
+            notesPreview: combinedMilestoneNotes(milestones: record.milestones, notes: record.notes)
+        )
+    }
+
+    private func growthRow(from record: ChildGrowthRecord) -> GrowthRow {
+        GrowthRow(
+            id: record.id,
+            dateText: displayDate(fromISO: record.measuredOn),
+            weightText: String(format: "%.1f", record.weightKg),
+            heightText: String(format: "%.0f", record.heightCm),
+            notesPreview: combinedMilestoneNotes(milestones: record.milestones, notes: record.notes)
+        )
     }
 
     private var momReadOnlyMilestonesSection: some View {
@@ -626,10 +731,10 @@ struct GrowthTrackingMomView: View {
         .disabled(isLoading)
     }
 
-    private var listSection: some View {
+    private func growthHistoryTableSection(showsDisclosure: Bool) -> some View {
         VStack(alignment: .leading, spacing: 14) {
-            Text("Recent Entries")
-                .font(.system(size: 34, weight: .bold, design: .rounded))
+            Text("Growth records")
+                .font(.system(size: 22, weight: .bold, design: .rounded))
                 .foregroundStyle(Color.black.opacity(0.8))
 
             columnHeaders
@@ -641,16 +746,18 @@ struct GrowthTrackingMomView: View {
                         .padding(.vertical, 18)
                 }
 
-                if rows.isEmpty, !isLoading {
+                if sortedGrowthRowsNewestFirst.isEmpty, !isLoading {
                     Text("No records yet")
                         .font(.system(size: 16, weight: .semibold))
                         .foregroundStyle(Color.black.opacity(0.45))
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 18)
                 } else {
-                    ForEach(rows) { row in
-                        growthRow(row)
-                        Divider().opacity(0.25)
+                    ForEach(Array(sortedGrowthRowsNewestFirst.enumerated()), id: \.element.id) { idx, row in
+                        growthRow(row, showsDisclosure: showsDisclosure)
+                        if idx < sortedGrowthRowsNewestFirst.count - 1 {
+                            Divider().opacity(0.25)
+                        }
                     }
                 }
             }
@@ -679,7 +786,7 @@ struct GrowthTrackingMomView: View {
         .padding(.top, 2)
     }
 
-    private func growthRow(_ row: GrowthRow) -> some View {
+    private func growthRow(_ row: GrowthRow, showsDisclosure: Bool) -> some View {
         HStack {
             VStack(alignment: .leading, spacing: 4) {
                 Text(row.dateText)
@@ -690,7 +797,7 @@ struct GrowthTrackingMomView: View {
                     Text(row.notesPreview)
                         .font(.system(size: 12, weight: .semibold))
                         .foregroundStyle(Color.black.opacity(0.45))
-                        .lineLimit(1)
+                        .lineLimit(2)
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -705,9 +812,11 @@ struct GrowthTrackingMomView: View {
                 .foregroundStyle(Color.black.opacity(0.75))
                 .frame(width: 80, alignment: .leading)
 
-            Image(systemName: "chevron.right")
-                .font(.system(size: 16, weight: .bold))
-                .foregroundStyle(Color.black.opacity(0.25))
+            if showsDisclosure {
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 16, weight: .bold))
+                    .foregroundStyle(Color.black.opacity(0.25))
+            }
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 16)
@@ -759,6 +868,7 @@ struct GrowthTrackingMomView: View {
 
             rows.insert(
                 GrowthRow(
+                    id: UUID(),
                     dateText: dateText,
                     weightText: String(format: "%.1f", weightKg),
                     heightText: String(format: "%.0f", heightCm),
@@ -820,6 +930,7 @@ struct GrowthTrackingMomView: View {
 
             rows.insert(
                 GrowthRow(
+                    id: UUID(),
                     dateText: dateText,
                     weightText: String(format: "%.1f", weightKg),
                     heightText: String(format: "%.0f", heightCm),
@@ -875,28 +986,16 @@ struct GrowthTrackingMomView: View {
 
     private func applyDatabaseRecords(_ records: [GrowthRecord]) {
         momGrowthSource = records
-        rows = records.map { record in
-            GrowthRow(
-                dateText: displayDate(fromISO: record.measuredOn),
-                weightText: String(format: "%.1f", record.weightKg),
-                heightText: String(format: "%.0f", record.heightCm),
-                notesPreview: record.notes?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-            )
-        }
-        recentWeights = records.prefix(5).map { $0.weightKg }.reversed()
+        rows = records.sorted { $0.measuredOn > $1.measuredOn }.map { growthRow(from: $0) }
+        let chronological = records.sorted { $0.measuredOn < $1.measuredOn }
+        recentWeights = chronological.suffix(5).map { $0.weightKg }
     }
 
     private func applyDatabaseRecords(_ records: [ChildGrowthRecord]) {
         childGrowthSource = records
-        rows = records.map { record in
-            GrowthRow(
-                dateText: displayDate(fromISO: record.measuredOn),
-                weightText: String(format: "%.1f", record.weightKg),
-                heightText: String(format: "%.0f", record.heightCm),
-                notesPreview: record.notes?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-            )
-        }
-        recentWeights = records.prefix(5).map { $0.weightKg }.reversed()
+        rows = records.sorted { $0.measuredOn > $1.measuredOn }.map { growthRow(from: $0) }
+        let chronological = records.sorted { $0.measuredOn < $1.measuredOn }
+        recentWeights = chronological.suffix(5).map { $0.weightKg }
     }
 
     private func displayDate(fromISO isoDateString: String) -> String {
@@ -926,7 +1025,7 @@ struct GrowthTrackingMomView: View {
 }
 
 private struct GrowthRow: Identifiable, Hashable {
-    let id = UUID()
+    let id: UUID
     let dateText: String
     let weightText: String
     let heightText: String

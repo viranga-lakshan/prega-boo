@@ -8,6 +8,7 @@ struct MomProfile: Codable {
     var contactNumber: String
     var district: String
     var lmpDate: String?
+    var photoPath: String?
 
     enum CodingKeys: String, CodingKey {
         case id
@@ -16,5 +17,6 @@ struct MomProfile: Codable {
         case contactNumber = "contact_number"
         case district
         case lmpDate = "lmp_date"
+        case photoPath = "photo_path"
     }
 }

@@ -32,6 +32,7 @@ struct MomAndBabyDetailsView: View {
 
     @State private var momProfile: MomProfile?
     @State private var children: [ChildProfile] = []
+    @State private var childPhotoById: [UUID: UIImage] = [:]
     @State private var isLoadingHub = false
 
     private var effectiveSession: AuthSessionContext? {
@@ -157,8 +158,35 @@ struct MomAndBabyDetailsView: View {
             let (p, c) = try await (profile, kids)
             momProfile = p
             children = c
+            await loadChildPhotos(children: c, accessToken: s.accessToken)
         } catch {
             children = []
+            childPhotoById = [:]
+        }
+    }
+
+    private func loadChildPhotos(children: [ChildProfile], accessToken: String) async {
+        var next: [UUID: UIImage] = [:]
+        await withTaskGroup(of: (UUID, UIImage?).self) { group in
+            for child in children {
+                guard let path = child.idPhotoPath, !path.isEmpty else { continue }
+                group.addTask {
+                    do {
+                        let data = try await ChildProfilesRepository().fetchChildPhoto(path: path, accessToken: accessToken)
+                        return (child.id, UIImage(data: data))
+                    } catch {
+                        return (child.id, nil)
+                    }
+                }
+            }
+            for await (id, image) in group {
+                if let image {
+                    next[id] = image
+                }
+            }
+        }
+        await MainActor.run {
+            childPhotoById = next
         }
     }
 
@@ -350,9 +378,17 @@ struct MomAndBabyDetailsView: View {
                     .fill(Color.white)
                     .frame(width: 44, height: 44)
 
-                Image(systemName: "person.fill")
-                    .font(.system(size: 18, weight: .bold))
-                    .foregroundStyle(model.accentColor)
+                if let image = childPhotoById[child.id] {
+                    Image(uiImage: image)
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: 44, height: 44)
+                        .clipShape(Circle())
+                } else {
+                    Image(systemName: "person.fill")
+                        .font(.system(size: 18, weight: .bold))
+                        .foregroundStyle(model.accentColor)
+                }
             }
 
             VStack(alignment: .leading, spacing: 2) {

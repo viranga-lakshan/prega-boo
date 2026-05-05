@@ -55,4 +55,14 @@ final class MomDashboardController {
             ]
         )
     }
+
+    /// Mom home → Reminders (push settings, upcoming list, history). Theme matches the dashboard card.
+    @MainActor
+    func makeRemindersView(for dashboard: MomDashboardModel, session: AuthSessionContext?) -> MomRemindersView {
+        MomRemindersView(
+            backgroundColor: dashboard.backgroundColor,
+            accentColor: dashboard.accentColor,
+            session: session
+        )
+    }
 }

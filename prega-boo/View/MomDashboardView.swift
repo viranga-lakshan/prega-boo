@@ -16,6 +16,8 @@ struct MomDashboardView: View {
 
     @State private var selectedTab: MomDashboardTab = .home
     @State private var showMomAndBabyDetails = false
+    @State private var showReminders = false
+    @State private var showLibrary = false
 
     var body: some View {
         ZStack {
@@ -69,6 +71,22 @@ struct MomDashboardView: View {
                     healthUIMode: .momReadOnly
                 ),
                 isActive: $showMomAndBabyDetails
+            ) {
+                EmptyView()
+            }
+        )
+        .background(
+            NavigationLink(
+                destination: MomDashboardController().makeRemindersView(for: model, session: momSession.session),
+                isActive: $showReminders
+            ) {
+                EmptyView()
+            }
+        )
+        .background(
+            NavigationLink(
+                destination: MomLibraryView(accentColor: model.accentColor, backgroundColor: model.backgroundColor),
+                isActive: $showLibrary
             ) {
                 EmptyView()
             }
@@ -240,8 +258,12 @@ struct MomDashboardView: View {
         Button(action: {
             if item.title == "Mom & Babies Details" {
                 showMomAndBabyDetails = true
+            } else if item.title == "Reminders" {
+                showReminders = true
             } else if item.title == "Hospitals" {
                 selectedTab = .map
+            } else if item.title == "Library" {
+                showLibrary = true
             }
         }) {
             HStack(spacing: 14) {

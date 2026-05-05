@@ -26,6 +26,7 @@ struct BabyDetailsView: View {
 
     @State private var latestWeight: String?
     @State private var latestHeight: String?
+    @State private var childPhoto: UIImage?
 
     private let actionColumns = [
         GridItem(.flexible(), spacing: 16),
@@ -82,7 +83,10 @@ struct BabyDetailsView: View {
             }
         }
         .navigationBarBackButtonHidden(true)
-        .task { await loadLatestGrowth() }
+        .task {
+            await loadLatestGrowth()
+            await loadChildPhoto()
+        }
         .background(
             NavigationLink(
                 destination: Group {
@@ -155,6 +159,17 @@ struct BabyDetailsView: View {
         }
     }
 
+    private func loadChildPhoto() async {
+        guard let session, let child, let path = child.idPhotoPath, !path.isEmpty else { return }
+        do {
+            let data = try await ChildProfilesRepository().fetchChildPhoto(path: path, accessToken: session.accessToken)
+            let image = UIImage(data: data)
+            await MainActor.run { childPhoto = image }
+        } catch {
+            await MainActor.run { childPhoto = nil }
+        }
+    }
+
     private var topBar: some View {
         HStack(alignment: .top) {
             Button(action: { dismiss() }) {
@@ -197,9 +212,17 @@ struct BabyDetailsView: View {
                     .stroke(model.accentColor.opacity(0.8), lineWidth: 3)
                     .frame(width: 160, height: 160)
 
-                Image(systemName: "face.smiling")
-                    .font(.system(size: 72, weight: .bold))
-                    .foregroundStyle(model.accentColor)
+                if let childPhoto {
+                    Image(uiImage: childPhoto)
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: 148, height: 148)
+                        .clipShape(Circle())
+                } else {
+                    Image(systemName: "face.smiling")
+                        .font(.system(size: 72, weight: .bold))
+                        .foregroundStyle(model.accentColor)
+                }
             }
 
             HStack(spacing: 8) {

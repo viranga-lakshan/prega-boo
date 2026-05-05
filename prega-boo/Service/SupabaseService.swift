@@ -96,18 +96,33 @@ final class SupabaseService {
         contentType: String,
         accessToken: String
     ) async throws {
-        // path should be e.g. "child-photos/my-image.jpg"
-        let fullPath = "/storage/v1/object/\(bucket)/\(path)"
-        
-        _ = try await request(
-            path: fullPath,
-            method: "POST",
-            headers: [
-                "Authorization": "Bearer \(accessToken)",
-                "Content-Type": contentType,
-                "x-upsert": "true"
-            ],
-            body: data
-        )
+        // Encode each path segment so Storage object names are URL-safe while preserving `/`.
+        let encodedPath = path
+            .split(separator: "/", omittingEmptySubsequences: false)
+            .map { segment -> String in
+                String(segment).addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? String(segment)
+            }
+            .joined(separator: "/")
+
+        guard let url = URL(string: "/storage/v1/object/\(bucket)/\(encodedPath)", relativeTo: baseURL) else {
+            throw SupabaseServiceError.invalidResponse
+        }
+
+        var req = URLRequest(url: url)
+        req.httpMethod = "POST"
+        req.httpBody = data
+        req.setValue(sanitizedAnonKey, forHTTPHeaderField: "apikey")
+        req.setValue("Bearer \(accessToken.trimmingCharacters(in: .whitespacesAndNewlines))", forHTTPHeaderField: "Authorization")
+        req.setValue(contentType, forHTTPHeaderField: "Content-Type")
+        req.setValue("true", forHTTPHeaderField: "x-upsert")
+
+        let (respData, resp) = try await URLSession.shared.data(for: req)
+        guard let http = resp as? HTTPURLResponse else {
+            throw SupabaseServiceError.invalidResponse
+        }
+        guard (200..<300).contains(http.statusCode) else {
+            let body = String(data: respData, encoding: .utf8) ?? ""
+            throw SupabaseServiceError.httpError(status: http.statusCode, body: body)
+        }
     }
 }
