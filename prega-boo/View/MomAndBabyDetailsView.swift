@@ -4,13 +4,21 @@ struct MomAndBabyDetailsView: View {
     let model: MomAndBabyDetailsModel
     let session: AuthSessionContext?
     let mom: MomListRow?
+    /// Use `.momReadOnly` for the logged-in mom (Health Passport). Use `.midwifeEntry` when a midwife manages this patient (forms to add records).
+    let healthUIMode: HealthFeatureViewMode
 
     @EnvironmentObject private var momSession: MomSessionStore
 
-    init(model: MomAndBabyDetailsModel, session: AuthSessionContext? = nil, mom: MomListRow? = nil) {
+    init(
+        model: MomAndBabyDetailsModel,
+        session: AuthSessionContext? = nil,
+        mom: MomListRow? = nil,
+        healthUIMode: HealthFeatureViewMode = .momReadOnly
+    ) {
         self.model = model
         self.session = session
         self.mom = mom
+        self.healthUIMode = healthUIMode
     }
 
     @Environment(\.dismiss) private var dismiss
@@ -81,7 +89,8 @@ struct MomAndBabyDetailsView: View {
                         BabyDetailsView(
                             model: BabyDetailsController().loadModel(babyName: selectedBaby.fullName),
                             session: s,
-                            child: selectedBaby
+                            child: selectedBaby,
+                            healthFeatureMode: healthUIMode
                         )
                     } else {
                         EmptyView()
@@ -99,7 +108,7 @@ struct MomAndBabyDetailsView: View {
                     session: effectiveSession,
                     momUserId: effectiveMomUserId,
                     childId: nil,
-                    mode: .momReadOnly
+                    mode: healthUIMode
                 ),
                 isActive: $showVaccineDetails
             ) {
@@ -113,7 +122,7 @@ struct MomAndBabyDetailsView: View {
                     session: effectiveSession,
                     momUserId: effectiveMomUserId,
                     childId: nil,
-                    mode: .momReadOnly
+                    mode: healthUIMode
                 ),
                 isActive: $showClinicVisitDetails
             ) {
@@ -127,7 +136,7 @@ struct MomAndBabyDetailsView: View {
                     session: effectiveSession,
                     momUserId: effectiveMomUserId,
                     childId: nil,
-                    mode: .momReadOnly,
+                    mode: healthUIMode,
                     ageHeadline: nil
                 ),
                 isActive: $showGrowthTracking
@@ -139,11 +148,12 @@ struct MomAndBabyDetailsView: View {
 
     private func loadHub() async {
         guard let s = effectiveSession else { return }
+        let momUserIdForData = mom?.userId ?? s.userId
         isLoadingHub = true
         defer { isLoadingHub = false }
         do {
-            async let profile = MomProfileRepository().fetchOwnProfile(userId: s.userId, accessToken: s.accessToken)
-            async let kids = ChildProfilesRepository().fetchChildren(momUserId: s.userId, accessToken: s.accessToken)
+            async let profile = MomProfileRepository().fetchOwnProfile(userId: momUserIdForData, accessToken: s.accessToken)
+            async let kids = ChildProfilesRepository().fetchChildren(momUserId: momUserIdForData, accessToken: s.accessToken)
             let (p, c) = try await (profile, kids)
             momProfile = p
             children = c

@@ -77,7 +77,8 @@ struct ChildCareDetailsView: View {
                     model: VaccineDetailsMomController().loadModel(),
                     session: session,
                     momUserId: nil,
-                    childId: child.id
+                    childId: child.id,
+                    mode: .midwifeEntry
                 ),
                 isActive: $showVaccineDetails
             ) {
@@ -90,7 +91,8 @@ struct ChildCareDetailsView: View {
                     model: ClinicVisitDetailsMomController().loadModel(),
                     session: session,
                     momUserId: nil,
-                    childId: child.id
+                    childId: child.id,
+                    mode: .midwifeEntry
                 ),
                 isActive: $showClinicVisitDetails
             ) {
@@ -103,7 +105,8 @@ struct ChildCareDetailsView: View {
                     model: GrowthTrackingMomController().loadModel(),
                     session: session,
                     momUserId: nil,
-                    childId: child.id
+                    childId: child.id,
+                    mode: .midwifeEntry
                 ),
                 isActive: $showGrowthTracking
             ) {

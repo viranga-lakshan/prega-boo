@@ -4,11 +4,18 @@ struct BabyDetailsView: View {
     let model: BabyDetailsModel
     let session: AuthSessionContext?
     let child: ChildProfile?
+    let healthFeatureMode: HealthFeatureViewMode
 
-    init(model: BabyDetailsModel, session: AuthSessionContext? = nil, child: ChildProfile? = nil) {
+    init(
+        model: BabyDetailsModel,
+        session: AuthSessionContext? = nil,
+        child: ChildProfile? = nil,
+        healthFeatureMode: HealthFeatureViewMode = .momReadOnly
+    ) {
         self.model = model
         self.session = session
         self.child = child
+        self.healthFeatureMode = healthFeatureMode
     }
 
     @Environment(\.dismiss) private var dismiss
@@ -85,7 +92,7 @@ struct BabyDetailsView: View {
                             session: session,
                             momUserId: nil,
                             childId: child.id,
-                            mode: .momReadOnly
+                            mode: healthFeatureMode
                         )
                     } else { EmptyView() }
                 },
@@ -101,7 +108,7 @@ struct BabyDetailsView: View {
                             session: session,
                             momUserId: nil,
                             childId: child.id,
-                            mode: .momReadOnly
+                            mode: healthFeatureMode
                         )
                     } else { EmptyView() }
                 },
@@ -117,7 +124,7 @@ struct BabyDetailsView: View {
                             session: session,
                             momUserId: nil,
                             childId: child.id,
-                            mode: .momReadOnly,
+                            mode: healthFeatureMode,
                             ageHeadline: MomHealthAgeFormatting.ageLabelFromBirth(iso: child.birthDate)
                         )
                     } else { EmptyView() }

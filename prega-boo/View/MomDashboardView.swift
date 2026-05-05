@@ -65,7 +65,8 @@ struct MomDashboardView: View {
                 destination: MomAndBabyDetailsView(
                     model: MomAndBabyDetailsController().loadModel(),
                     session: momSession.session,
-                    mom: nil
+                    mom: nil,
+                    healthUIMode: .momReadOnly
                 ),
                 isActive: $showMomAndBabyDetails
             ) {

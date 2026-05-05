@@ -61,7 +61,8 @@ struct MidwifeMomDetailsView: View {
                 destination: MomAndBabyDetailsView(
                     model: MomAndBabyDetailsController().loadModel(),
                     session: session,
-                    mom: mom
+                    mom: mom,
+                    healthUIMode: .midwifeEntry
                 ),
                 isActive: $isNavigatingToUpdateMomDetails
             ) {
