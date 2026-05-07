@@ -8,9 +8,27 @@ struct AppLockScreenView: View {
     @State private var pin = ""
     @State private var errorShake = false
     @State private var isBiometricRunning = false
+    @State private var didAttemptAutoBiometric = false
 
     private var bioTitle: String {
         BiometricAuthService.biometricTypeDescription()
+    }
+
+    private var hasPIN: Bool {
+        PINAuthStore.shared.hasPIN
+    }
+
+    private var lockInstruction: String {
+        switch (hasPIN, appLock.preferBiometricUnlock && BiometricAuthService.canUseBiometrics) {
+        case (true, true):
+            return "Use \(bioTitle.lowercased()) or enter your PIN."
+        case (true, false):
+            return "Enter your PIN to continue."
+        case (false, true):
+            return "Use \(bioTitle.lowercased()) to continue."
+        case (false, false):
+            return "App lock is unavailable right now."
+        }
     }
 
     var body: some View {
@@ -35,7 +53,7 @@ struct AppLockScreenView: View {
                     .font(.system(size: 24, weight: .bold, design: .rounded))
                     .foregroundStyle(.white)
 
-                Text("Enter your PIN or use \(bioTitle.lowercased()) if enabled.")
+                Text(lockInstruction)
                     .font(.system(size: 15, weight: .medium))
                     .foregroundStyle(.white.opacity(0.85))
                     .multilineTextAlignment(.center)
@@ -61,21 +79,33 @@ struct AppLockScreenView: View {
                     .disabled(isBiometricRunning)
                 }
 
-                PINPadView(accentColor: .white, pin: $pin, maxDigits: 4) { entered in
-                    if PINAuthStore.shared.verifyPIN(entered) {
-                        appLock.unlock()
-                        pin = ""
-                    } else {
-                        pin = ""
-                        withAnimation(.default) { errorShake.toggle() }
+                if hasPIN {
+                    PINPadView(accentColor: .white, pin: $pin, maxDigits: 4) { entered in
+                        if PINAuthStore.shared.verifyPIN(entered) {
+                            appLock.unlock()
+                            pin = ""
+                        } else {
+                            pin = ""
+                            withAnimation(.default) { errorShake.toggle() }
+                        }
                     }
+                    .padding(.horizontal, 36)
+                    .offset(x: errorShake ? 8 : 0)
+                    .animation(.spring(response: 0.12, dampingFraction: 0.4), value: errorShake)
                 }
-                .padding(.horizontal, 36)
-                .offset(x: errorShake ? 8 : 0)
-                .animation(.spring(response: 0.12, dampingFraction: 0.4), value: errorShake)
 
                 Spacer()
             }
+        }
+        .onAppear {
+            // Auto-trigger Face ID / Touch ID once when the lock screen appears,
+            // matching the iOS-native expectation (Apple Notes, Banking apps, etc.).
+            // If the user cancels or fails, they can still use the PIN pad below.
+            guard appLock.preferBiometricUnlock,
+                  BiometricAuthService.canUseBiometrics,
+                  !didAttemptAutoBiometric else { return }
+            didAttemptAutoBiometric = true
+            Task { await runBiometric() }
         }
     }
 

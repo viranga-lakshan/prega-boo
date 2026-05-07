@@ -33,7 +33,7 @@ enum BiometricAuthService {
     /// Unlocks using biometrics only (no device passcode fallback), so we can stack with our app PIN.
     static func authenticate(reason: String) async -> Bool {
         let context = LAContext()
-        context.localizedCancelTitle = "Use PIN"
+        context.localizedCancelTitle = PINAuthStore.shared.hasPIN ? "Use PIN" : "Cancel"
         do {
             return try await context.evaluatePolicy(
                 .deviceOwnerAuthenticationWithBiometrics,

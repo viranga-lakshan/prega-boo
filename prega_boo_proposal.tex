@@ -1,0 +1,145 @@
+\documentclass[12pt,a4paper]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{setspace}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{hyperref}
+\usepackage{titlesec}
+
+\onehalfspacing
+\titleformat{\section}{\large\bfseries}{\thesection.}{0.5em}{}
+\titleformat{\subsection}{\normalsize\bfseries}{\thesubsection.}{0.5em}{}
+
+\begin{document}
+
+\begin{titlepage}
+    \centering
+    \vspace*{1cm}
+    {\Large \textbf{NIBM BSc (Hons) Computing}}\\
+    \vspace{0.2cm}
+    {\large iOS Application Development Coursework Proposal}\\
+    \vspace{2cm}
+    {\Huge \textbf{Prega Boo}}\\
+    \vspace{0.4cm}
+    {\Large iOS Pregnancy Tracking and Support Application}\\
+    \vspace{2cm}
+    \begin{flushleft}
+        \textbf{Student Name:} \underline{\hspace{8cm}}\\[0.4cm]
+        \textbf{Student ID:} \underline{\hspace{8cm}}\\[0.4cm]
+        \textbf{Module:} iOS Application Development\\[0.4cm]
+        \textbf{Submission Type:} Project Proposal\\[0.4cm]
+        \textbf{Development Platform:} Swift, SwiftUI and Xcode\\
+    \end{flushleft}
+    \vfill
+    {\large \today}
+\end{titlepage}
+
+\section{Introduction}
+Prega Boo is a proposed iOS mobile application designed to support pregnant mothers during pregnancy by combining tracking, reminders, educational content and emotional support in one accessible platform. Pregnancy can be an exciting but demanding period, especially for first-time mothers who need to manage health appointments, baby development information, personal symptoms, water intake, weight changes and important reminders. Although many users may depend on paper notes, calendars or general health applications, these approaches are often fragmented and do not provide a pregnancy-focused experience.
+
+The proposed application will be developed using Swift and SwiftUI in Xcode. It will follow Apple's Human Interface Guidelines to provide a clean, modern and familiar iOS experience. The app will use Supabase for authentication and cloud data storage, Core Data for selected local/offline data, UserNotifications for reminders, LocalAuthentication for Face ID or Touch ID, and MapKit for nearby hospital and clinic discovery. The project will follow MVVM architecture to maintain a clear separation between interface, business logic and data services.
+
+\section{Problem Statement}
+Pregnant mothers often need to remember several types of information at the same time: clinic visits, medicine, hydration, baby movements, mood changes, weight records and pregnancy milestones. Missing appointments or not tracking symptoms can reduce awareness of important health patterns. Existing solutions may be too general, too complex, or not designed around the emotional and practical needs of pregnant users. Therefore, there is a need for a simple, supportive and reliable iOS application that helps mothers stay organized and informed throughout pregnancy.
+
+\section{Objectives}
+The main objective of Prega Boo is to develop a pregnancy support application that improves organization, awareness and confidence during pregnancy. The specific objectives are:
+\begin{itemize}
+    \item To provide secure user registration, login and profile management.
+    \item To track pregnancy progress, baby growth, mood, water intake, weight, kicks and contractions.
+    \item To support appointment scheduling and local/push reminder notifications.
+    \item To provide educational daily care tips relevant to pregnancy.
+    \item To integrate MapKit for finding nearby hospitals and clinics.
+    \item To use Face ID or Touch ID as an optional secure app-opening method.
+    \item To support accessibility through Dynamic Type, VoiceOver labels and clear navigation.
+\end{itemize}
+
+\section{Proposed Solution}
+Prega Boo will act as a personal pregnancy companion. After registering, a mother can access a home dashboard showing pregnancy progress, daily care tips, reminders and quick access to trackers. The app will allow users to create appointments, record health information, write personal journal notes, monitor water intake, count baby kicks and time contractions. Data that must be available across devices will be stored in Supabase, while selected records and cached profile data will use Core Data for offline access and better performance.
+
+The app will also support a secure but simple PIN and biometric model. Users may choose to enable a PIN from the profile area. If enabled, the app will ask for the PIN, Face ID or Touch ID when opened. Sign out will not require the PIN, because the PIN is used only as an app access protection mechanism.
+
+\section{System Features}
+The core features include user registration and login, pregnancy week tracker, baby growth information, appointment management, daily health tips, water intake tracking, weight tracking, mood tracking, kick counter, contraction timer, personal notes and journal, emergency contact section, dark mode support and profile management. Advanced iOS features include UserNotifications, LocalAuthentication, Core Data, MapKit and accessibility support.
+
+\section{Functional Requirements}
+\begin{itemize}
+    \item The user shall be able to register, log in and manage her profile.
+    \item The user shall be able to view pregnancy week progress and baby development details.
+    \item The user shall be able to create, update and view appointments.
+    \item The system shall generate reminders for appointments, water intake, medicine and daily tips.
+    \item The user shall be able to record water intake, weight, mood, kick counts and contraction sessions.
+    \item The user shall be able to save personal notes or journal entries.
+    \item The system shall show nearby hospitals and clinics using MapKit.
+    \item The user shall be able to enable PIN and Face ID or Touch ID protection.
+\end{itemize}
+
+\section{Non-Functional Requirements}
+The app should be responsive, reliable and usable on modern iPhone screen sizes. It should follow clean code principles, use reusable SwiftUI components and maintain modular development. The UI should support Dynamic Type and VoiceOver where appropriate. Data handling should be secure, with authentication tokens managed carefully and sensitive PIN information stored only as a hash in the iOS Keychain. The app should be scalable so that future modules, such as midwife support or baby care records, can be added without restructuring the whole system.
+
+\section{System Architecture}
+The project will follow MVVM architecture. The \textbf{View} layer will contain SwiftUI screens such as Dashboard, Pregnancy Tracker, Appointment Management and Profile. The \textbf{ViewModel/Controller} layer will prepare display data, handle UI state and coordinate actions. The \textbf{Model} layer will define data structures such as user profile, appointment, journal note and tracker entry. The \textbf{Service/Repository} layer will communicate with Supabase, Core Data, UserNotifications, MapKit and LocalAuthentication. MVVM is suitable because it improves testability, supports reusable components and keeps large SwiftUI screens easier to maintain.
+
+\section{Database Design}
+Supabase will be used as the cloud backend for authentication and remote storage. Tables may include user profiles, pregnancy records, appointments, reminders, journal notes and tracker entries. Supabase Row Level Security will be used to ensure each user can access only her own health data. Core Data will store selected local data such as cached profiles, recent tracker entries and offline records, improving availability when the network is unstable. This hybrid approach balances cloud synchronization with local performance.
+
+\section{UI/UX Design Description}
+The UI will follow Apple's Human Interface Guidelines with clear typography, large touch targets, soft colors and a calm pregnancy-friendly visual style. Navigation will use familiar iOS patterns such as tab navigation, cards, lists and sheets. SwiftUI reusable components will be used for cards, tracker buttons, input fields and progress indicators. Dark mode support will improve comfort during night use. The app will also use consistent icons and meaningful labels to reduce cognitive load.
+
+\section{Wireframe Explanation}
+The main screens will include: a Splash Screen for brand presentation; Onboarding Screens explaining pregnancy tracking and reminders; Login/Register Screen for account access; Home Dashboard for daily overview; Pregnancy Tracker Screen showing week-by-week progress; Appointment Management Screen for clinic visits; Water Intake Tracker for hydration goals; Mood Tracker for emotional patterns; Kick Counter for baby movement; Contraction Timer for labour preparation; Hospital Map Screen using MapKit; Notifications Screen listing reminders; User Profile Screen for personal details, PIN and Face ID; and Settings Screen for dark mode, accessibility and notification preferences.
+
+\section{Technologies and Tools Justification}
+Swift and SwiftUI are selected because they are Apple's modern native development tools for building efficient iOS applications. Xcode provides interface preview, debugging and simulator support. Supabase is suitable for authentication, database storage and secure API access. Core Data provides reliable local persistence. UserNotifications is required for reminders. LocalAuthentication supports Face ID and Touch ID. MapKit provides native maps and location-based hospital discovery. GitHub will be used for version control, branch management and meaningful commit tracking.
+
+\section{Advanced iOS Features}
+The mandatory and advanced iOS features are integrated as practical user benefits. Push/local notifications will remind users about appointments and health tasks. Face ID or Touch ID will provide optional secure app opening. Core Data will improve offline access. MapKit will help users locate hospitals and clinics. Accessibility features such as Dynamic Type, VoiceOver support and clear navigation will make the app more inclusive.
+
+\section{Testing Strategy}
+Testing will include unit tests for tracker calculations, PIN validation, date formatting, reminder scheduling logic and repository data mapping. UI testing will check navigation, form validation and common user flows such as registration, appointment creation and editing profile data. Manual testing will be performed on different iPhone simulators to verify layouts, dark mode, Dynamic Type and notification permissions. Code quality will be maintained through modular files, clear naming, reusable components, limited duplication and GitHub commit management.
+
+\section{Implementation Timeline}
+\begin{longtable}{|p{2.5cm}|p{10.5cm}|}
+\hline
+\textbf{Week} & \textbf{Planned Work} \\
+\hline
+Week 1 & Finalize proposal, app concept, requirements, wireframes and UI prototype. Set up Xcode project, GitHub repository and basic MVVM folder structure. \\
+\hline
+Week 2 & Implement authentication, profile management, dashboard, pregnancy tracker, baby growth content and Core Data setup. \\
+\hline
+Week 3 & Implement appointment management, notifications, water intake, weight, mood, kick counter, contraction timer and journal features. \\
+\hline
+Week 4 & Implement MapKit hospital screen, Face ID/PIN support, accessibility improvements, testing, bug fixing, final documentation and submission preparation. \\
+\hline
+\end{longtable}
+
+\section{Risks and Mitigation}
+Possible risks include notification permission issues, Supabase configuration errors, limited time for testing and complexity in managing offline data. These will be reduced by testing permissions early, using small repository classes for API logic, committing frequently to GitHub and prioritizing core pregnancy features before optional enhancements. Privacy risks will be mitigated by using authenticated access, secure session handling and avoiding unnecessary collection of sensitive data.
+
+\section{Ethical, Privacy and Accessibility Considerations}
+Pregnancy data is personal and sensitive. The app will collect only necessary information and store it securely. Users will remain in control of their profile, notifications and security settings. The application will not provide medical diagnosis; care tips will be presented as supportive information, and users will be encouraged to contact healthcare professionals for medical concerns. Accessibility will be considered through readable fonts, VoiceOver labels, color contrast, Dynamic Type and simple navigation.
+
+\section{Future Enhancements}
+Future improvements may include midwife-to-mother care notes, Apple Calendar synchronization, wearable device integration, AI-based pregnancy tip recommendations, multilingual support, emergency SOS workflow and postpartum baby-care tracking. The modular MVVM structure and Supabase backend will allow these features to be added progressively.
+
+\section{Approval Process and Final Deliverables}
+The project proposal, wireframes and prototype will be submitted for lecturer approval before full implementation begins. Feedback received during the approval stage will be used to refine the feature scope and interface flow. The final submission will include the Xcode project, source code, GitHub version history, proposal document, prototype/wireframe evidence, test evidence, final report and a short demonstration of the working iOS application.
+
+\section{Reflection on Learning Outcomes}
+This project will demonstrate practical understanding of iOS application development through SwiftUI layout design, MVVM structuring, API integration, secure authentication, local persistence, notifications and accessibility. It will also improve my ability to plan a complete mobile solution, manage source code using GitHub, test important logic components and make design decisions based on user needs rather than only technical features.
+
+\section{Conclusion}
+Prega Boo is a practical and meaningful iOS coursework project that demonstrates SwiftUI interface design, MVVM architecture, cloud integration, local persistence, notifications, biometrics, maps and accessibility. The app solves a real organizational problem for pregnant mothers by combining pregnancy tracking, health reminders and personal support in a calm and user-friendly experience. With a clear implementation plan and realistic scope, the project is suitable for university submission and can be extended into a more complete maternal care platform in the future.
+
+\section{References}
+\begin{itemize}
+    \item Apple. (2024). \textit{Human Interface Guidelines}. Apple Developer. \url{https://developer.apple.com/design/human-interface-guidelines/}
+    \item Apple. (2024). \textit{SwiftUI documentation}. Apple Developer. \url{https://developer.apple.com/documentation/swiftui}
+    \item Apple. (2024). \textit{LocalAuthentication framework}. Apple Developer. \url{https://developer.apple.com/documentation/localauthentication}
+    \item Apple. (2024). \textit{UserNotifications framework}. Apple Developer. \url{https://developer.apple.com/documentation/usernotifications}
+    \item Apple. (2024). \textit{MapKit documentation}. Apple Developer. \url{https://developer.apple.com/documentation/mapkit}
+    \item Supabase. (2024). \textit{Supabase documentation}. \url{https://supabase.com/docs}
+\end{itemize}
+
+\end{document}

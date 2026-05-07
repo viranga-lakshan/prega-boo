@@ -13,6 +13,8 @@ struct ChildCareDetailsView: View {
     @State private var showVaccineDetails = false
     @State private var showClinicVisitDetails = false
     @State private var showGrowthTracking = false
+    @State private var showJournalNotes = false
+    @State private var childPhoto: UIImage?
 
     private let columns = [
         GridItem(.flexible(), spacing: 16),
@@ -37,6 +39,12 @@ struct ChildCareDetailsView: View {
             subtitle: "ROUTINE",
             systemImageName: "calendar",
             backgroundColor: Color.blue.opacity(0.10)
+        ),
+        MomAndBabyQuickAction(
+            title: "Note",
+            subtitle: "JOURNAL",
+            systemImageName: "note.text",
+            backgroundColor: Color.orange.opacity(0.10)
         )
     ]
 
@@ -71,6 +79,7 @@ struct ChildCareDetailsView: View {
             }
         }
         .navigationBarBackButtonHidden(true)
+        .task { await loadChildPhoto() }
         .background(
             NavigationLink(
                 destination: VaccineDetailsMomView(
@@ -113,6 +122,26 @@ struct ChildCareDetailsView: View {
                 EmptyView()
             }
         )
+        .background(
+            NavigationLink(
+                destination: MomJournalNotesView(
+                    model: MomJournalNotesController().loadModel(),
+                    session: session,
+                    momUserId: mom.userId,
+                    childId: child.id,
+                    subjectName: babyFirstName,
+                    mode: .midwifeEntry
+                ),
+                isActive: $showJournalNotes
+            ) {
+                EmptyView()
+            }
+        )
+    }
+
+    private var babyFirstName: String {
+        let name = child.fullName
+        return String(name.split(separator: " ").first ?? Substring(name))
     }
 
     private var topBar: some View {
@@ -152,9 +181,17 @@ struct ChildCareDetailsView: View {
                     .frame(width: 110, height: 110)
                     .shadow(color: Color.black.opacity(0.10), radius: 16, x: 0, y: 10)
 
-                Image(systemName: "face.smiling.fill")
-                    .font(.system(size: 84))
-                    .foregroundStyle(Color.black.opacity(0.12))
+                if let childPhoto {
+                    Image(uiImage: childPhoto)
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: 110, height: 110)
+                        .clipShape(Circle())
+                } else {
+                    Image(systemName: "face.smiling.fill")
+                        .font(.system(size: 84))
+                        .foregroundStyle(Color.black.opacity(0.12))
+                }
 
                 Circle()
                     .fill(accentColor)
@@ -211,6 +248,8 @@ struct ChildCareDetailsView: View {
                 showClinicVisitDetails = true
             } else if action.title == "Growth" {
                 showGrowthTracking = true
+            } else if action.title == "Note" {
+                showJournalNotes = true
             }
         }) {
             VStack(alignment: .leading, spacing: 10) {
@@ -236,6 +275,24 @@ struct ChildCareDetailsView: View {
             .padding(18)
             .background(action.backgroundColor)
             .clipShape(RoundedRectangle(cornerRadius: 26, style: .continuous))
+        }
+    }
+
+    private func loadChildPhoto() async {
+        guard let path = child.idPhotoPath, !path.isEmpty else {
+            await MainActor.run { childPhoto = nil }
+            return
+        }
+
+        do {
+            let data = try await ChildProfilesRepository().fetchChildPhoto(
+                path: path,
+                accessToken: session.accessToken
+            )
+            let image = UIImage(data: data)
+            await MainActor.run { childPhoto = image }
+        } catch {
+            await MainActor.run { childPhoto = nil }
         }
     }
 

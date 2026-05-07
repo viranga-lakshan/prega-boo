@@ -13,9 +13,13 @@ struct MidwifeMomsListView: View {
     @State private var errorMessage: String?
 
     @State private var midwifeDistrict: String?
+    @State private var midwifeProfile: MidwifeProfile?
+    @State private var midwifePhoto: UIImage?
 
     @State private var offset = 0
     private let pageSize = 10
+
+    @State private var showOwnProfile = false
 
     var body: some View {
         ZStack {
@@ -41,14 +45,24 @@ struct MidwifeMomsListView: View {
                     .padding(.horizontal, 22)
                     .padding(.top, 12)
                 }
-
-                bottomTabBar
             }
+
+            NavigationLink(
+                destination: MidwifeOwnProfileView(
+                    session: session,
+                    onLogout: { dismiss() }
+                ),
+                isActive: $showOwnProfile
+            ) {
+                EmptyView()
+            }
+            .hidden()
         }
         .navigationBarBackButtonHidden(true)
         .onAppear {
             loadFirstPage()
         }
+        .task { await loadMidwifeProfileAndPhoto() }
         .alert(
             "Error",
             isPresented: Binding(
@@ -64,6 +78,33 @@ struct MidwifeMomsListView: View {
 
     private var topBar: some View {
         HStack {
+            Button {
+                showOwnProfile = true
+            } label: {
+                ZStack {
+                    Circle()
+                        .fill(model.accentColor.opacity(0.14))
+                        .frame(width: 38, height: 38)
+
+                    if let midwifePhoto {
+                        Image(uiImage: midwifePhoto)
+                            .resizable()
+                            .scaledToFill()
+                            .frame(width: 38, height: 38)
+                            .clipShape(Circle())
+                    } else {
+                        Image(systemName: "person.fill")
+                            .font(.system(size: 16, weight: .bold))
+                            .foregroundStyle(model.accentColor)
+                    }
+
+                    Circle()
+                        .stroke(model.accentColor.opacity(0.35), lineWidth: 1)
+                        .frame(width: 38, height: 38)
+                }
+            }
+            .accessibilityLabel("My profile")
+
             Spacer()
 
             Text(model.title)
@@ -72,19 +113,8 @@ struct MidwifeMomsListView: View {
 
             Spacer()
 
-            Button {
-                dismiss()
-            } label: {
-                HStack(spacing: 8) {
-                    Text(model.logoutTitle)
-                        .font(.system(size: 14, weight: .medium))
-                        .foregroundStyle(Color.black.opacity(0.5))
-
-                    Image(systemName: "power")
-                        .font(.system(size: 18, weight: .semibold))
-                        .foregroundStyle(Color.green.opacity(0.7))
-                }
-            }
+            // Spacer to keep the title visually centered after logout was moved into the profile screen.
+            Color.clear.frame(width: 38, height: 38)
         }
         .padding(.horizontal, 18)
         .padding(.top, 12)
@@ -262,40 +292,6 @@ struct MidwifeMomsListView: View {
         .disabled(isLoading)
     }
 
-    private var bottomTabBar: some View {
-        HStack {
-            tabItem(title: "HOME", systemImage: "house", isSelected: false)
-            tabItem(title: "SEARCH", systemImage: "magnifyingglass", isSelected: false)
-            tabItem(title: "LISTS", systemImage: "list.bullet", isSelected: true)
-            tabItem(title: "PROFILE", systemImage: "person", isSelected: false)
-        }
-        .padding(.horizontal, 18)
-        .padding(.top, 10)
-        .padding(.bottom, 18)
-        .background(Color.white.opacity(0.65))
-    }
-
-    private func tabItem(title: String, systemImage: String, isSelected: Bool) -> some View {
-        VStack(spacing: 6) {
-            ZStack {
-                if isSelected {
-                    RoundedRectangle(cornerRadius: 18, style: .continuous)
-                        .fill(model.accentColor.opacity(0.12))
-                        .frame(width: 70, height: 44)
-                }
-
-                Image(systemName: systemImage)
-                    .font(.system(size: 18, weight: .semibold))
-                    .foregroundStyle(isSelected ? model.accentColor : Color.black.opacity(0.35))
-            }
-
-            Text(title)
-                .font(.system(size: 11, weight: .medium))
-                .foregroundStyle(Color.black.opacity(0.45))
-        }
-        .frame(maxWidth: .infinity)
-    }
-
     private var filteredMoms: [MomListRow] {
         let trimmed = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return moms }
@@ -383,6 +379,30 @@ struct MidwifeMomsListView: View {
                     errorMessage = "Failed to load moms: \(error.localizedDescription)"
                 }
             }
+        }
+    }
+
+    private func loadMidwifeProfileAndPhoto() async {
+        do {
+            let profile = try await MidwifeProfileRepository().fetchOwnProfile(
+                userId: session.userId,
+                accessToken: session.accessToken
+            )
+            await MainActor.run { midwifeProfile = profile }
+
+            guard let path = profile?.photoPath, !path.isEmpty else {
+                await MainActor.run { midwifePhoto = nil }
+                return
+            }
+
+            let data = try await MidwifeProfileRepository().fetchProfilePhoto(
+                path: path,
+                accessToken: session.accessToken
+            )
+            let image = UIImage(data: data)
+            await MainActor.run { midwifePhoto = image }
+        } catch {
+            await MainActor.run { midwifePhoto = nil }
         }
     }
 

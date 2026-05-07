@@ -29,6 +29,7 @@ struct MomAndBabyDetailsView: View {
     @State private var showVaccineDetails = false
     @State private var showClinicVisitDetails = false
     @State private var showGrowthTracking = false
+    @State private var showJournalNotes = false
 
     @State private var momProfile: MomProfile?
     @State private var momProfilePhoto: UIImage?
@@ -142,6 +143,19 @@ struct MomAndBabyDetailsView: View {
                     ageHeadline: nil
                 ),
                 isActive: $showGrowthTracking
+            ) {
+                EmptyView()
+            }
+        )
+        .background(
+            NavigationLink(
+                destination: MomJournalNotesView(
+                    model: MomJournalNotesController().loadModel(),
+                    session: effectiveSession,
+                    momUserId: effectiveMomUserId,
+                    mode: healthUIMode
+                ),
+                isActive: $showJournalNotes
             ) {
                 EmptyView()
             }
@@ -333,6 +347,8 @@ struct MomAndBabyDetailsView: View {
                 showClinicVisitDetails = true
             } else if action.title == "Growth" {
                 showGrowthTracking = true
+            } else if action.title == "Note" {
+                showJournalNotes = true
             }
         }) {
             VStack(alignment: .leading, spacing: 10) {

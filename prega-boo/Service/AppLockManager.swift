@@ -23,11 +23,15 @@ final class AppLockManager: ObservableObject {
     private init() {
         lockWhenLeavingApp = UserDefaults.standard.bool(forKey: Keys.lockWhenLeaving)
         preferBiometricUnlock = UserDefaults.standard.bool(forKey: Keys.preferBio)
-        isLocked = PINAuthStore.shared.hasPIN
+        isLocked = lockWhenLeavingApp && hasUnlockMethod
+    }
+
+    var hasUnlockMethod: Bool {
+        PINAuthStore.shared.hasPIN || (preferBiometricUnlock && BiometricAuthService.canUseBiometrics)
     }
 
     var isAppLockActive: Bool {
-        PINAuthStore.shared.hasPIN && lockWhenLeavingApp
+        lockWhenLeavingApp && hasUnlockMethod
     }
 
     func sceneDidEnterBackground() {
@@ -43,5 +47,12 @@ final class AppLockManager: ObservableObject {
         lockWhenLeavingApp = false
         preferBiometricUnlock = false
         isLocked = false
+    }
+
+    func syncLockPreferenceWithAvailableMethods() {
+        if !hasUnlockMethod {
+            lockWhenLeavingApp = false
+            isLocked = false
+        }
     }
 }

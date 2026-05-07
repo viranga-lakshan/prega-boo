@@ -13,13 +13,11 @@ struct MomDashboardView: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var appLock: AppLockManager
     @EnvironmentObject private var momSession: MomSessionStore
-    @Environment(\.scenePhase) private var scenePhase
 
     @State private var selectedTab: MomDashboardTab = .home
     @State private var showMomAndBabyDetails = false
     @State private var showReminders = false
     @State private var showLibrary = false
-    @State private var showMandatoryPINSetup = false
 
     var body: some View {
         ZStack {
@@ -60,20 +58,10 @@ struct MomDashboardView: View {
             }
         }
         .navigationBarBackButtonHidden(true)
-        .onChange(of: scenePhase) { _, phase in
-            if phase == .background {
-                appLock.sceneDidEnterBackground()
-            }
-        }
         .onChange(of: momSession.session) { _, session in
             if session == nil {
                 dismiss()
-            } else {
-                enforcePINRequirement()
             }
-        }
-        .onAppear {
-            enforcePINRequirement()
         }
         .task {
             let name: String
@@ -87,15 +75,6 @@ struct MomDashboardView: View {
                 district = "Sri Lanka"
             }
             WidgetSnapshotStore.publishForDashboard(name: name, district: district)
-        }
-        .sheet(isPresented: $showMandatoryPINSetup) {
-            PINSetupSheetView(accentColor: model.accentColor, isMandatory: true) {
-                showMandatoryPINSetup = false
-                appLock.lockWhenLeavingApp = true
-                appLock.preferBiometricUnlock = false
-            }
-            .interactiveDismissDisabled(true)
-            .presentationDetents([.large])
         }
         .background(
             NavigationLink(
@@ -126,14 +105,6 @@ struct MomDashboardView: View {
                 EmptyView()
             }
         )
-    }
-
-    private func enforcePINRequirement() {
-        guard momSession.session != nil else {
-            showMandatoryPINSetup = false
-            return
-        }
-        showMandatoryPINSetup = !PINAuthStore.shared.hasPIN
     }
 
     private var homeContent: some View {
@@ -209,16 +180,6 @@ struct MomDashboardView: View {
                 .foregroundStyle(Color.black.opacity(0.78))
 
             Spacer()
-
-            HStack(spacing: 8) {
-                Text(model.headerActionTitle)
-                    .font(.system(size: 14, weight: .medium))
-                    .foregroundStyle(Color.black.opacity(0.55))
-
-                Image(systemName: "power")
-                    .font(.system(size: 16, weight: .bold))
-                    .foregroundStyle(Color.green.opacity(0.9))
-            }
         }
         .padding(.vertical, 10)
         .background(Color.white.opacity(0.30))

@@ -52,6 +52,28 @@ final class MidwifeProfileRepository {
         return try JSONDecoder().decode([MidwifeProfile].self, from: data)
     }
 
+    /// Upload (or replace) the current midwife's profile photo into the `midwife-photos` bucket.
+    /// Storage RLS requires the first path segment to be the user's auth uid (lower-cased).
+    func uploadProfilePhoto(userId: UUID, photoData: Data, accessToken: String) async throws -> String {
+        let fileName = "\(UUID().uuidString).jpg"
+        let path = "\(userId.uuidString.lowercased())/\(fileName)"
+        do {
+            try await supabase.upload(
+                bucket: "midwife-photos",
+                path: path,
+                data: photoData,
+                contentType: "image/jpeg",
+                accessToken: accessToken
+            )
+        } catch SupabaseServiceError.httpError(let status, let body) {
+            throw SupabaseServiceError.httpError(
+                status: status,
+                body: "[Storage upload midwife-photos] \(body)"
+            )
+        }
+        return path
+    }
+
     func fetchProfilePhoto(path: String, accessToken: String) async throws -> Data {
         let encodedPath = path
             .split(separator: "/", omittingEmptySubsequences: false)

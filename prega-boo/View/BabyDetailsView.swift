@@ -23,6 +23,7 @@ struct BabyDetailsView: View {
     @State private var showVaccineDetails = false
     @State private var showClinicVisitDetails = false
     @State private var showGrowthTracking = false
+    @State private var showJournalNotes = false
 
     @State private var latestWeight: String?
     @State private var latestHeight: String?
@@ -136,6 +137,30 @@ struct BabyDetailsView: View {
                 isActive: $showGrowthTracking
             ) { EmptyView() }
         )
+        .background(
+            NavigationLink(
+                destination: Group {
+                    if let session, let child {
+                        MomJournalNotesView(
+                            model: MomJournalNotesController().loadModel(),
+                            session: session,
+                            momUserId: child.momUserId,
+                            childId: child.id,
+                            subjectName: babyFirstName,
+                            mode: healthFeatureMode
+                        )
+                    } else { EmptyView() }
+                },
+                isActive: $showJournalNotes
+            ) { EmptyView() }
+        )
+    }
+
+    private var babyFirstName: String {
+        if let name = child?.fullName, !name.isEmpty {
+            return String(name.split(separator: " ").first ?? Substring(name))
+        }
+        return model.babyName.split(separator: " ").first.map(String.init) ?? model.babyName
     }
 
     private func loadLatestGrowth() async {
@@ -287,6 +312,7 @@ struct BabyDetailsView: View {
             case "Growth": showGrowthTracking = true
             case "Vaccine": showVaccineDetails = true
             case "Schedule": showClinicVisitDetails = true
+            case "Note": showJournalNotes = true
             default: break
             }
         }) {

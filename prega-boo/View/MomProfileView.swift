@@ -44,6 +44,7 @@ struct MomProfileView: View {
         .refreshable { await loadProfile() }
         .sheet(isPresented: $showPINSetup) {
             PINSetupSheetView(accentColor: dashboardModel.accentColor) {
+                appLock.lockWhenLeavingApp = true
                 showPINSetup = false
                 securityUIRevision += 1
             }
@@ -62,7 +63,10 @@ struct MomProfileView: View {
             .presentationDetents([.large])
         }
         .onChange(of: showPINSetup) { _, presented in
-            if !presented { securityUIRevision += 1 }
+            if !presented {
+                appLock.syncLockPreferenceWithAvailableMethods()
+                securityUIRevision += 1
+            }
         }
         .alert("Profile", isPresented: Binding(
             get: { localAlert != nil },
@@ -73,13 +77,14 @@ struct MomProfileView: View {
             Text(localAlert ?? "")
         }
         .confirmationDialog("Remove PIN?", isPresented: $showRemovePINConfirm, titleVisibility: .visible) {
-            Button("Remove PIN & turn off lock", role: .destructive) {
+            Button("Remove PIN", role: .destructive) {
                 PINAuthStore.shared.clearPIN()
-                appLock.resetLockPreferences()
+                appLock.syncLockPreferenceWithAvailableMethods()
+                securityUIRevision += 1
             }
             Button("Cancel", role: .cancel) {}
         } message: {
-            Text("You will need to set a PIN again to use app lock.")
+            Text("Face ID can still unlock the app if it is enabled.")
         }
         .confirmationDialog("Sign out?", isPresented: $showSignOutConfirm, titleVisibility: .visible) {
             Button("Sign out", role: .destructive) { signOut() }
@@ -186,10 +191,10 @@ struct MomProfileView: View {
 
             Toggle(isOn: lockWhenLeavingBinding) {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Lock when leaving app")
+                    Text("Use a PIN to open this app")
                         .font(.system(size: 16, weight: .semibold))
                         .foregroundStyle(Color.black.opacity(0.78))
-                    Text("Ask for PIN (or Face ID) when you return from another app.")
+                    Text("Ask for your 4-digit PIN when the app is opened.")
                         .font(.system(size: 13, weight: .medium))
                         .foregroundStyle(Color.black.opacity(0.4))
                 }
@@ -203,7 +208,7 @@ struct MomProfileView: View {
                         .foregroundStyle(Color.black.opacity(0.78))
                     Text(
                         BiometricAuthService.canUseBiometrics
-                        ? "Quick unlock when app lock is on. PIN always works as backup."
+                        ? "Open the app with Face ID. PIN is optional."
                         : "Face ID / Touch ID is unavailable on this device right now."
                     )
                     .font(.system(size: 13, weight: .medium))
@@ -211,8 +216,8 @@ struct MomProfileView: View {
                 }
             }
             .tint(dashboardModel.accentColor)
-            .disabled(!PINAuthStore.shared.hasPIN || !BiometricAuthService.canUseBiometrics)
-            .opacity((PINAuthStore.shared.hasPIN && BiometricAuthService.canUseBiometrics) ? 1 : 0.45)
+            .disabled(!BiometricAuthService.canUseBiometrics)
+            .opacity(BiometricAuthService.canUseBiometrics ? 1 : 0.45)
 
             VStack(alignment: .leading, spacing: 8) {
                 Button {
@@ -254,17 +259,15 @@ struct MomProfileView: View {
 
     private var lockWhenLeavingBinding: Binding<Bool> {
         Binding(
-            get: { appLock.lockWhenLeavingApp },
+            get: { PINAuthStore.shared.hasPIN },
             set: { newValue in
                 if newValue {
-                    guard PINAuthStore.shared.hasPIN else {
-                        showPINSetup = true
-                        return
-                    }
+                    showPINSetup = true
                     appLock.lockWhenLeavingApp = true
                 } else {
-                    appLock.lockWhenLeavingApp = false
-                    appLock.isLocked = false
+                    if PINAuthStore.shared.hasPIN {
+                        showRemovePINConfirm = true
+                    }
                 }
             }
         )
@@ -274,10 +277,6 @@ struct MomProfileView: View {
         Binding(
             get: { appLock.preferBiometricUnlock },
             set: { newValue in
-                guard PINAuthStore.shared.hasPIN else {
-                    localAlert = "Set a PIN before using biometrics."
-                    return
-                }
                 guard BiometricAuthService.canUseBiometrics else {
                     localAlert = "Face ID / Touch ID is unavailable on this device."
                     appLock.preferBiometricUnlock = false
@@ -302,6 +301,7 @@ struct MomProfileView: View {
                     }
                 } else {
                     appLock.preferBiometricUnlock = false
+                    appLock.syncLockPreferenceWithAvailableMethods()
                 }
             }
         )
@@ -367,9 +367,10 @@ struct MomProfileView: View {
     }
 
     private func signOut() {
+        // Sign out only clears the user session; PIN/Face ID preferences are kept
+        // on this device so the next launch still respects them.
+        // Use the "Remove PIN" action above if you want to also turn off app lock.
         momSession.clearSession()
-        appLock.resetLockPreferences()
-        PINAuthStore.shared.clearPIN()
         profile = nil
         localAlert = "You are signed out on this device. Use the back button to return to sign in, or restart the app."
     }
