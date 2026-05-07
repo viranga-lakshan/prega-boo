@@ -58,15 +58,28 @@ struct OnboardingScreenView: View {
         }
     }
 
+    private var isLastPage: Bool {
+        model.currentPageIndex >= model.pageCount - 1
+    }
+
     private var bottomBar: some View {
         VStack(spacing: 0) {
             Divider()
                 .opacity(0.15)
 
             HStack {
-                Button("SKIP", action: onSkip)
-                    .font(.system(size: 14, weight: .medium))
-                    .foregroundStyle(.black)
+                if isLastPage {
+                    Color.clear.frame(width: 56, height: 1)
+                } else {
+                    Button(action: onSkip) {
+                        Text("SKIP")
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundStyle(.black)
+                            .frame(width: 56, height: 36)
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                }
 
                 Spacer()
 
@@ -80,12 +93,21 @@ struct OnboardingScreenView: View {
 
                 Spacer()
 
-                Button("NEXT", action: onNext)
-                    .font(.system(size: 14, weight: .medium))
-                    .foregroundStyle(.black)
+                if isLastPage {
+                    Color.clear.frame(width: 56, height: 1)
+                } else {
+                    Button(action: onNext) {
+                        Text("NEXT")
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundStyle(model.accentColor)
+                            .frame(width: 56, height: 36)
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                }
             }
             .padding(.horizontal, 28)
-            .padding(.vertical, 18)
+            .padding(.vertical, 14)
             .background(Color.white)
         }
     }

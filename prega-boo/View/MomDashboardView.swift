@@ -13,6 +13,7 @@ struct MomDashboardView: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var appLock: AppLockManager
     @EnvironmentObject private var momSession: MomSessionStore
+    @EnvironmentObject private var deepLinkRouter: DeepLinkRouter
 
     @State private var selectedTab: MomDashboardTab = .home
     @State private var showMomAndBabyDetails = false
@@ -50,12 +51,6 @@ struct MomDashboardView: View {
                     .padding(.horizontal, 18)
                     .padding(.bottom, 14)
             }
-
-            if appLock.isLocked {
-                AppLockScreenView(accentColor: model.accentColor)
-                    .transition(.opacity)
-                    .zIndex(2)
-            }
         }
         .navigationBarBackButtonHidden(true)
         .onChange(of: momSession.session) { _, session in
@@ -64,17 +59,17 @@ struct MomDashboardView: View {
             }
         }
         .task {
-            let name: String
-            let district: String
-            if let session = momSession.session,
-               let profile = try? await MomProfileRepository().fetchOwnProfile(userId: session.userId, accessToken: session.accessToken) {
-                name = profile.fullName
-                district = profile.district
-            } else {
-                name = "Mom"
-                district = "Sri Lanka"
+            await refreshWidgetSnapshot()
+        }
+        .onChange(of: deepLinkRouter.shouldOpenMomBabyDetails) { _, requested in
+            guard requested else { return }
+            // Make sure the home tab is selected so the NavigationLink is in the active stack.
+            selectedTab = .home
+            // Defer the push so SwiftUI has a chance to flush the tab change.
+            DispatchQueue.main.async {
+                showMomAndBabyDetails = true
+                deepLinkRouter.shouldOpenMomBabyDetails = false
             }
-            WidgetSnapshotStore.publishForDashboard(name: name, district: district)
         }
         .background(
             NavigationLink(
@@ -341,8 +336,62 @@ struct MomDashboardView: View {
     }
 }
 
+extension MomDashboardView {
+    fileprivate func refreshWidgetSnapshot() async {
+        guard let session = momSession.session else {
+            WidgetSnapshotStore.publishForDashboard(name: "Mom", district: "Sri Lanka", babyCount: 0)
+            return
+        }
+
+        // Today as `yyyy-MM-dd` in the device time zone (mirrors the reminders screen).
+        let todayFormatter = DateFormatter()
+        todayFormatter.locale = Locale(identifier: "en_US_POSIX")
+        todayFormatter.timeZone = TimeZone.current
+        todayFormatter.dateFormat = "yyyy-MM-dd"
+        let todayISO = todayFormatter.string(from: Date())
+
+        async let profile = try? MomProfileRepository().fetchOwnProfile(
+            userId: session.userId,
+            accessToken: session.accessToken
+        )
+        async let children = (try? ChildProfilesRepository().fetchChildren(
+            momUserId: session.userId,
+            accessToken: session.accessToken
+        )) ?? []
+        async let reminders = (try? MomRemindersRepository().fetchScheduled(
+            momUserId: session.userId,
+            fromDateISO: todayISO,
+            accessToken: session.accessToken
+        )) ?? []
+
+        let resolvedProfile = await profile
+        let resolvedKids = await children
+        let upcoming = await reminders
+
+        // Repository already returns reminders sorted by date asc. Pick the
+        // earliest one that still has notifications enabled.
+        let nextReminder = upcoming.first(where: { $0.notificationEnabled })
+        let nextTitle = nextReminder?.title
+        let nextWhen = nextReminder.flatMap {
+            WidgetReminderFormatter.format(
+                reminderDateISO: $0.reminderDate,
+                reminderTime: $0.reminderTime
+            )
+        }
+
+        WidgetSnapshotStore.publishForDashboard(
+            name: resolvedProfile?.fullName ?? "Mom",
+            district: resolvedProfile?.district ?? "Sri Lanka",
+            babyCount: resolvedKids.count,
+            nextReminderTitle: nextTitle,
+            nextReminderWhen: nextWhen
+        )
+    }
+}
+
 #Preview {
     MomDashboardView(model: MomDashboardController().loadModel())
         .environmentObject(MomSessionStore.shared)
         .environmentObject(AppLockManager.shared)
+        .environmentObject(DeepLinkRouter.shared)
 }

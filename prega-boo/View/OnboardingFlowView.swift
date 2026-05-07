@@ -31,17 +31,27 @@ struct OnboardingFlowView: View {
                         currentPageIndex: safeIndex
                     ),
                     onSkip: {
-                        pageIndex = pages.count - 1
+                        // Skip bypasses the rest of the onboarding entirely.
+                        withAnimation(.easeInOut) { showBloomWelcome = true }
                     },
                     onNext: {
-                        pageIndex = min(pageIndex + 1, pages.count - 1)
+                        withAnimation(.easeInOut) {
+                            if safeIndex >= pages.count - 1 {
+                                showBloomWelcome = true
+                            } else {
+                                pageIndex = safeIndex + 1
+                            }
+                        }
                     },
                     onPrimaryAction: {
-                        showBloomWelcome = true
+                        withAnimation(.easeInOut) { showBloomWelcome = true }
                     }
                 )
+                .transition(.opacity)
             }
         }
+        .animation(.easeInOut, value: pageIndex)
+        .animation(.easeInOut, value: showBloomWelcome)
     }
 }
 
