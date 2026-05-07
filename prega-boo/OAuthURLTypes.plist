@@ -15,5 +15,9 @@
 			</array>
 		</dict>
 	</array>
+	<key>NSCalendarsFullAccessUsageDescription</key>
+	<string>Prega Boo adds your clinic visits, vaccines, growth check-ins, and reminders to your Apple Calendar so you never miss them.</string>
+	<key>NSCalendarsUsageDescription</key>
+	<string>Prega Boo adds your clinic visits, vaccines, growth check-ins, and reminders to your Apple Calendar so you never miss them.</string>
 </dict>
 </plist>

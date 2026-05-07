@@ -121,28 +121,11 @@ struct ExpectingBabyLoginView: View {
                 .foregroundStyle(.white)
                 .frame(maxWidth: .infinity, alignment: .center)
 
-            HStack(spacing: 18) {
-                Button(action: submitGoogleLogin) {
-                    socialCircle(label: "G")
-                }
-                .buttonStyle(.plain)
-                .disabled(isSubmitting)
-
-                Button(action: {
-                    errorMessage = "Sign in with Apple is not set up yet."
-                }) {
-                    socialCircle(systemImage: "apple.logo")
-                }
-                .buttonStyle(.plain)
-                .disabled(isSubmitting)
-
-                NavigationLink {
-                    ManualRegistrationView(model: ManualRegistrationController().loadModel())
-                } label: {
-                    socialCircle(systemImage: "envelope.fill")
-                }
-                .buttonStyle(.plain)
+            Button(action: submitGoogleLogin) {
+                socialCircle(label: "G")
             }
+            .buttonStyle(.plain)
+            .disabled(isSubmitting)
             .frame(maxWidth: .infinity, alignment: .center)
 
             HStack(spacing: 6) {

@@ -248,12 +248,8 @@ struct MomAndBabyDetailsView: View {
 
             Spacer()
 
-            Button(action: {}) {
-                Text(model.editTitle)
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundStyle(model.accentColor)
-                    .frame(width: 60, height: 44, alignment: .trailing)
-            }
+            Color.clear
+                .frame(width: 44, height: 44)
         }
     }
 

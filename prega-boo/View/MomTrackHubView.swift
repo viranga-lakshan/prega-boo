@@ -93,8 +93,8 @@ struct MomTrackHubView: View {
     private func trackerIcon(_ kind: MomTrackerKind) -> String {
         switch kind {
         case .weight: return "scalemass.fill"
-        case .kick: return "figure.pregnant"
-        case .pregnancy: return "calendar.badge.clock"
+        case .kick: return "hand.tap.fill"
+        case .pregnancy: return "heart.text.square.fill"
         case .mood: return "face.smiling.fill"
         }
     }

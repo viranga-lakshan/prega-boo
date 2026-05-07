@@ -17,6 +17,7 @@ struct MomRemindersView: View {
     @State private var loadError: String?
 
     @State private var showAddSheet = false
+    @State private var showEventGrid = false
     @State private var newTitle = ""
     @State private var newReminderDate = Date()
     @State private var newReminderTime = Date()
@@ -75,6 +76,16 @@ struct MomRemindersView: View {
             .refreshable { await reloadFromRemote() }
         }
         .navigationBarBackButtonHidden(true)
+        .background(
+            NavigationLink(
+                destination: MomEventGridView(
+                    backgroundColor: backgroundColor,
+                    accentColor: accentColor,
+                    session: session
+                ),
+                isActive: $showEventGrid
+            ) { EmptyView() }
+        )
         .sheet(isPresented: $showAddSheet) {
             addReminderSheet
         }
@@ -105,9 +116,15 @@ struct MomRemindersView: View {
                 .frame(maxWidth: .infinity)
 
             HStack(spacing: 14) {
-                Image(systemName: "calendar")
-                    .font(.system(size: 20, weight: .semibold))
-                    .foregroundStyle(deepMaroon)
+                Button { showEventGrid = true } label: {
+                    Image(systemName: "calendar")
+                        .font(.system(size: 20, weight: .semibold))
+                        .foregroundStyle(deepMaroon)
+                        .frame(width: 36, height: 36)
+                        .background(accentColor.opacity(0.12))
+                        .clipShape(Circle())
+                }
+                .accessibilityLabel("Event Calendar")
 
                 Circle()
                     .fill(accentColor.opacity(0.35))

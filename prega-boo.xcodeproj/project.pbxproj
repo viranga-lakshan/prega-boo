@@ -51,6 +51,13 @@
 			);
 			target = 7E244F512FAA024E00F961CF /* PregaBooWidgetExtension */;
 		};
+		7E647A6F2F88B7DC0037D15B /* Exceptions for "prega-boo" folder in "prega-boo" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				OAuthURLTypes.plist,
+			);
+			target = 7E647A292F88B7DC0037D15B /* prega-boo */;
+		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -64,6 +71,9 @@
 		};
 		7E647A2C2F88B7DC0037D15B /* prega-boo */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				7E647A6F2F88B7DC0037D15B /* Exceptions for "prega-boo" folder in "prega-boo" target */,
+			);
 			path = "prega-boo";
 			sourceTree = "<group>";
 		};
@@ -437,6 +447,9 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "prega-boo/OAuthURLTypes.plist";
+				INFOPLIST_KEY_NSCalendarsFullAccessUsageDescription = "Prega Boo adds your clinic visits, vaccines, growth check-ins, and reminders to your Apple Calendar so you never miss them.";
+				INFOPLIST_KEY_NSCalendarsUsageDescription = "Prega Boo adds your clinic visits, vaccines, growth check-ins, and reminders to your Apple Calendar so you never miss them.";
 				INFOPLIST_KEY_NSFaceIDUsageDescription = "Prega Boo uses Face ID so you can unlock the app quickly after leaving it.";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Prega Boo uses your location to show nearby hospitals and maternal health centers in Sri Lanka.";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
@@ -481,6 +494,9 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "prega-boo/OAuthURLTypes.plist";
+				INFOPLIST_KEY_NSCalendarsFullAccessUsageDescription = "Prega Boo adds your clinic visits, vaccines, growth check-ins, and reminders to your Apple Calendar so you never miss them.";
+				INFOPLIST_KEY_NSCalendarsUsageDescription = "Prega Boo adds your clinic visits, vaccines, growth check-ins, and reminders to your Apple Calendar so you never miss them.";
 				INFOPLIST_KEY_NSFaceIDUsageDescription = "Prega Boo uses Face ID so you can unlock the app quickly after leaving it.";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Prega Boo uses your location to show nearby hospitals and maternal health centers in Sri Lanka.";
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;

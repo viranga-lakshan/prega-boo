@@ -3,7 +3,7 @@ import SwiftUI
 final class MomAndBabyDetailsController {
     func loadModel() -> MomAndBabyDetailsModel {
         MomAndBabyDetailsModel(
-            backgroundColor: Color(red: 1.0, green: 0.97, blue: 0.97),
+            backgroundColor: Color(red: 0.99, green: 0.96, blue: 0.96),
             accentColor: Color(red: 0.94, green: 0.39, blue: 0.45),
             title: "Mom & Baby\nDetails",
             editTitle: "Edit",

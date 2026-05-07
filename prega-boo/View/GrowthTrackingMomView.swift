@@ -52,7 +52,7 @@ struct GrowthTrackingMomView: View {
         "Grasping"
     ]
 
-    private var deepAccent: Color { Color(red: 0.35, green: 0.18, blue: 0.42) }
+    private var deepAccent: Color { Color(red: 0.42, green: 0.11, blue: 0.20) }
 
     var body: some View {
         Group {
