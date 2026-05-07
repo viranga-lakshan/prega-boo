@@ -258,7 +258,7 @@ struct ChildCareDetailsView: View {
     NavigationStack {
         ChildCareDetailsView(
             session: AuthSessionContext(userId: UUID(), accessToken: ""),
-            mom: MomListRow(id: UUID(), userId: UUID(), fullName: "Mom Name", district: "District"),
+            mom: MomListRow(id: UUID(), userId: UUID(), fullName: "Mom Name", district: "District", photoPath: nil),
             child: ChildProfile(
                 id: UUID(),
                 momUserId: UUID(),

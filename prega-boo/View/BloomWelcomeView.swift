@@ -66,6 +66,12 @@ struct BloomWelcomeView: View {
                 } label: {
                     optionRowLabel(option)
                 }
+            } else if option.title.contains("ADMIN") {
+                NavigationLink {
+                    AdminLoginView()
+                } label: {
+                    optionRowLabel(option)
+                }
             } else {
                 Button(action: {}) {
                     optionRowLabel(option)

@@ -56,7 +56,8 @@ final class MomProfileRepository {
 
     func uploadProfilePhoto(userId: UUID, photoData: Data, accessToken: String) async throws -> String {
         let fileName = "\(UUID().uuidString).jpg"
-        let path = "\(userId.uuidString)/\(fileName)"
+        // Storage RLS compares against auth.uid()::text (lowercase), so normalize folder UUID.
+        let path = "\(userId.uuidString.lowercased())/\(fileName)"
         try await supabase.upload(
             bucket: "mom-photos",
             path: path,
@@ -65,5 +66,22 @@ final class MomProfileRepository {
             accessToken: accessToken
         )
         return path
+    }
+
+    func fetchProfilePhoto(path: String, accessToken: String) async throws -> Data {
+        let encodedPath = path
+            .split(separator: "/", omittingEmptySubsequences: false)
+            .map { part -> String in
+                String(part).addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? String(part)
+            }
+            .joined(separator: "/")
+
+        let (data, _) = try await supabase.request(
+            path: "/storage/v1/object/authenticated/mom-photos/\(encodedPath)",
+            headers: [
+                "Authorization": "Bearer \(accessToken)"
+            ]
+        )
+        return data
     }
 }

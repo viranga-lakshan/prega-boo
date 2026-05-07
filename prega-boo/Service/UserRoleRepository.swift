@@ -50,4 +50,25 @@ final class UserRoleRepository {
         let decoded = try JSONDecoder().decode([RoleOnly].self, from: data)
         return decoded.first?.role
     }
+
+    /// Admin use-case: create/update role row for any user.
+    func upsertRole(userId: UUID, role: AppRole, accessToken: String) async throws {
+        let payload: [[String: String]] = [[
+            "user_id": userId.uuidString,
+            "role": role.rawValue
+        ]]
+        let body = try JSONSerialization.data(withJSONObject: payload)
+
+        _ = try await supabase.request(
+            path: "/rest/v1/user_roles",
+            method: "POST",
+            queryItems: [URLQueryItem(name: "on_conflict", value: "user_id")],
+            headers: [
+                "Content-Type": "application/json",
+                "Prefer": "resolution=merge-duplicates,return=minimal",
+                "Authorization": "Bearer \(accessToken)"
+            ],
+            body: body
+        )
+    }
 }

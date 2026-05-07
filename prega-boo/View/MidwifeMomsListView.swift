@@ -8,6 +8,7 @@ struct MidwifeMomsListView: View {
 
     @State private var searchText = ""
     @State private var moms: [MomListRow] = []
+    @State private var momPhotoByUserId: [UUID: UIImage] = [:]
     @State private var isLoading = false
     @State private var errorMessage: String?
 
@@ -175,9 +176,17 @@ struct MidwifeMomsListView: View {
                     .fill(Color.black.opacity(0.06))
                     .frame(width: 70, height: 70)
 
-                Image(systemName: "person.fill")
-                    .font(.system(size: 28, weight: .semibold))
-                    .foregroundStyle(Color.black.opacity(0.25))
+                if let image = momPhotoByUserId[mom.userId] {
+                    Image(uiImage: image)
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: 70, height: 70)
+                        .clipShape(Circle())
+                } else {
+                    Image(systemName: "person.fill")
+                        .font(.system(size: 28, weight: .semibold))
+                        .foregroundStyle(Color.black.opacity(0.25))
+                }
             }
 
             VStack(alignment: .leading, spacing: 6) {
@@ -364,6 +373,7 @@ struct MidwifeMomsListView: View {
                     }
                     offset += results.count
                 }
+                await loadMomPhotos(from: visibleResults)
             } catch SupabaseServiceError.httpError(let status, let body) {
                 await MainActor.run {
                     errorMessage = "Failed to load moms (\(status)): \(SupabaseAuthService.humanMessage(fromBody: body))"
@@ -372,6 +382,35 @@ struct MidwifeMomsListView: View {
                 await MainActor.run {
                     errorMessage = "Failed to load moms: \(error.localizedDescription)"
                 }
+            }
+        }
+    }
+
+    private func loadMomPhotos(from rows: [MomListRow]) async {
+        var fetched: [UUID: UIImage] = [:]
+        await withTaskGroup(of: (UUID, UIImage?).self) { group in
+            for row in rows {
+                guard let path = row.photoPath, !path.isEmpty else { continue }
+                group.addTask {
+                    do {
+                        let data = try await MomProfileRepository().fetchProfilePhoto(path: path, accessToken: session.accessToken)
+                        return (row.userId, UIImage(data: data))
+                    } catch {
+                        return (row.userId, nil)
+                    }
+                }
+            }
+
+            for await (userId, image) in group {
+                if let image {
+                    fetched[userId] = image
+                }
+            }
+        }
+
+        await MainActor.run {
+            for (userId, image) in fetched {
+                momPhotoByUserId[userId] = image
             }
         }
     }

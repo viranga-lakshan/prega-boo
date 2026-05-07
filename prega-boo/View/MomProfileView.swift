@@ -1,3 +1,4 @@
+import PhotosUI
 import SwiftUI
 
 struct MomProfileView: View {
@@ -10,6 +11,8 @@ struct MomProfileView: View {
     @State private var profile: MomProfile?
     @State private var isLoadingProfile = false
     @State private var profileError: String?
+    @State private var profilePhoto: UIImage?
+    @State private var showEditProfile = false
 
     @State private var showPINSetup = false
     @State private var showRemovePINConfirm = false
@@ -46,6 +49,18 @@ struct MomProfileView: View {
             }
             .presentationDetents([.large])
         }
+        .sheet(isPresented: $showEditProfile) {
+            MomProfileEditSheet(
+                dashboardModel: dashboardModel,
+                profile: profile,
+                onSaved: { updated in
+                    profile = updated
+                    Task { await loadProfilePhotoIfAvailable(profile: updated) }
+                }
+            )
+            .environmentObject(momSession)
+            .presentationDetents([.large])
+        }
         .onChange(of: showPINSetup) { _, presented in
             if !presented { securityUIRevision += 1 }
         }
@@ -78,9 +93,17 @@ struct MomProfileView: View {
                 Circle()
                     .fill(dashboardModel.accentColor.opacity(0.2))
                     .frame(width: 88, height: 88)
-                Image(systemName: "person.crop.circle.fill")
-                    .font(.system(size: 52, weight: .medium))
-                    .foregroundStyle(dashboardModel.accentColor)
+                if let profilePhoto {
+                    Image(uiImage: profilePhoto)
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: 88, height: 88)
+                        .clipShape(Circle())
+                } else {
+                    Image(systemName: "person.crop.circle.fill")
+                        .font(.system(size: 52, weight: .medium))
+                        .foregroundStyle(dashboardModel.accentColor)
+                }
             }
             Text(profileCopy.title)
                 .font(.system(size: 28, weight: .bold, design: .rounded))
@@ -89,6 +112,13 @@ struct MomProfileView: View {
                 .font(.system(size: 15, weight: .medium))
                 .foregroundStyle(Color.black.opacity(0.45))
                 .multilineTextAlignment(.center)
+            if profile != nil {
+                Button("Edit details") {
+                    showEditProfile = true
+                }
+                .font(.system(size: 14, weight: .semibold))
+                .foregroundStyle(dashboardModel.accentColor)
+            }
         }
         .frame(maxWidth: .infinity)
     }
@@ -307,9 +337,32 @@ struct MomProfileView: View {
                 accessToken: session.accessToken
             )
             profile = p
+            await loadProfilePhotoIfAvailable(profile: p)
         } catch {
             profile = nil
+            profilePhoto = nil
             profileError = "Could not load profile. Check network and Supabase."
+        }
+    }
+
+    private func loadProfilePhotoIfAvailable(profile: MomProfile?) async {
+        guard let session = momSession.session,
+              let path = profile?.photoPath,
+              !path.isEmpty
+        else {
+            profilePhoto = nil
+            return
+        }
+
+        do {
+            let data = try await MomProfileRepository().fetchProfilePhoto(path: path, accessToken: session.accessToken)
+            if let image = UIImage(data: data) {
+                profilePhoto = image
+            } else {
+                profilePhoto = nil
+            }
+        } catch {
+            profilePhoto = nil
         }
     }
 
@@ -319,6 +372,188 @@ struct MomProfileView: View {
         PINAuthStore.shared.clearPIN()
         profile = nil
         localAlert = "You are signed out on this device. Use the back button to return to sign in, or restart the app."
+    }
+}
+
+private struct MomProfileEditSheet: View {
+    let dashboardModel: MomDashboardModel
+    let profile: MomProfile?
+    var onSaved: (MomProfile) -> Void
+
+    @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject private var momSession: MomSessionStore
+
+    @State private var fullName = ""
+    @State private var contactNumber = ""
+    @State private var district = ""
+    @State private var lmpDate = ""
+    @State private var selectedPhotoItem: PhotosPickerItem?
+    @State private var selectedPhotoData: Data?
+    @State private var selectedPhotoPreview: Image?
+
+    @State private var isSaving = false
+    @State private var errorMessage: String?
+
+    private let districts: [String] = [
+        "Ampara", "Anuradhapura", "Badulla", "Batticaloa", "Colombo", "Galle", "Gampaha",
+        "Hambantota", "Jaffna", "Kalutara", "Kandy", "Kegalle", "Kilinochchi", "Kurunegala",
+        "Mannar", "Matale", "Matara", "Monaragala", "Mullaitivu", "Nuwara Eliya", "Polonnaruwa",
+        "Puttalam", "Ratnapura", "Trincomalee", "Vavuniya"
+    ]
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 14) {
+                    field(label: "Full name", text: $fullName)
+                    field(label: "Contact number", text: $contactNumber)
+                    field(label: "LMP date (YYYY-MM-DD)", text: $lmpDate)
+
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("District")
+                            .font(.system(size: 13, weight: .semibold))
+                            .foregroundStyle(Color.black.opacity(0.55))
+
+                        Menu {
+                            ForEach(districts, id: \.self) { value in
+                                Button(value) { district = value }
+                            }
+                        } label: {
+                            HStack {
+                                Text(district.isEmpty ? "Select district" : district)
+                                    .foregroundStyle(district.isEmpty ? Color.black.opacity(0.35) : Color.black.opacity(0.85))
+                                Spacer()
+                                Image(systemName: "chevron.down")
+                                    .foregroundStyle(Color.black.opacity(0.4))
+                            }
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 12)
+                            .background(Color.black.opacity(0.05))
+                            .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                        }
+                    }
+
+                    PhotosPicker(selection: $selectedPhotoItem, matching: .images) {
+                        HStack(spacing: 12) {
+                            if let selectedPhotoPreview {
+                                selectedPhotoPreview
+                                    .resizable()
+                                    .scaledToFill()
+                                    .frame(width: 48, height: 48)
+                                    .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                            } else {
+                                Image(systemName: "camera.fill")
+                                    .frame(width: 48, height: 48)
+                                    .background(Color.black.opacity(0.06))
+                                    .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                            }
+                            Text("Change profile photo (optional)")
+                                .foregroundStyle(Color.black.opacity(0.75))
+                            Spacer()
+                        }
+                    }
+
+                    if let errorMessage {
+                        Text(errorMessage)
+                            .font(.system(size: 13, weight: .medium))
+                            .foregroundStyle(Color.red.opacity(0.85))
+                    }
+                }
+                .padding(18)
+            }
+            .navigationTitle("Edit profile")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { dismiss() }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button(isSaving ? "Saving..." : "Save") {
+                        Task { await save() }
+                    }
+                    .disabled(isSaving)
+                }
+            }
+            .onAppear {
+                fullName = profile?.fullName ?? ""
+                contactNumber = profile?.contactNumber ?? ""
+                district = profile?.district ?? ""
+                lmpDate = profile?.lmpDate ?? ""
+            }
+            .onChange(of: selectedPhotoItem) { _, newValue in
+                guard let newValue else { return }
+                Task {
+                    if let data = try? await newValue.loadTransferable(type: Data.self),
+                       let uiImage = UIImage(data: data) {
+                        await MainActor.run {
+                            selectedPhotoPreview = Image(uiImage: uiImage)
+                            selectedPhotoData = uiImage.jpegData(compressionQuality: 0.85) ?? data
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private func field(label: String, text: Binding<String>) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(label)
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundStyle(Color.black.opacity(0.55))
+            TextField("", text: text)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 12)
+                .background(Color.black.opacity(0.05))
+                .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+        }
+    }
+
+    private func save() async {
+        errorMessage = nil
+        guard let session = momSession.session else {
+            errorMessage = "Session missing. Please sign in again."
+            return
+        }
+        let trimmedName = fullName.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedContact = contactNumber.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedDistrict = district.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmedLmp = lmpDate.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        guard !trimmedName.isEmpty, !trimmedContact.isEmpty, !trimmedDistrict.isEmpty else {
+            errorMessage = "Full name, contact number and district are required."
+            return
+        }
+
+        isSaving = true
+        defer { isSaving = false }
+
+        do {
+            var photoPath = profile?.photoPath
+            if let selectedPhotoData {
+                photoPath = try await MomProfileRepository().uploadProfilePhoto(
+                    userId: session.userId,
+                    photoData: selectedPhotoData,
+                    accessToken: session.accessToken
+                )
+            }
+
+            let updated = MomProfile(
+                id: profile?.id,
+                userId: session.userId,
+                fullName: trimmedName,
+                contactNumber: trimmedContact,
+                district: trimmedDistrict,
+                lmpDate: trimmedLmp.isEmpty ? nil : trimmedLmp,
+                photoPath: photoPath
+            )
+            try await MomProfileRepository().upsert(profile: updated, accessToken: session.accessToken)
+            onSaved(updated)
+            dismiss()
+        } catch SupabaseServiceError.httpError(let status, let body) {
+            errorMessage = "Save failed (\(status)): \(SupabaseAuthService.humanMessage(fromBody: body))"
+        } catch {
+            errorMessage = "Save failed: \(error.localizedDescription)"
+        }
     }
 }
 

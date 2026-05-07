@@ -37,4 +37,35 @@ final class MidwifeProfileRepository {
         let decoded = try JSONDecoder().decode([MidwifeProfile].self, from: data)
         return decoded.first
     }
+
+    func fetchAll(accessToken: String) async throws -> [MidwifeProfile] {
+        let (data, _) = try await supabase.request(
+            path: "/rest/v1/midwife_profiles",
+            queryItems: [
+                URLQueryItem(name: "select", value: "*"),
+                URLQueryItem(name: "order", value: "created_at.desc")
+            ],
+            headers: [
+                "Authorization": "Bearer \(accessToken)"
+            ]
+        )
+        return try JSONDecoder().decode([MidwifeProfile].self, from: data)
+    }
+
+    func fetchProfilePhoto(path: String, accessToken: String) async throws -> Data {
+        let encodedPath = path
+            .split(separator: "/", omittingEmptySubsequences: false)
+            .map { part -> String in
+                String(part).addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? String(part)
+            }
+            .joined(separator: "/")
+
+        let (data, _) = try await supabase.request(
+            path: "/storage/v1/object/authenticated/midwife-photos/\(encodedPath)",
+            headers: [
+                "Authorization": "Bearer \(accessToken)"
+            ]
+        )
+        return data
+    }
 }

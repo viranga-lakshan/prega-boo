@@ -369,7 +369,7 @@ struct ChildRegistrationView: View {
         ChildRegistrationView(
             model: ChildRegistrationController().loadModel(),
             session: AuthSessionContext(userId: UUID(), accessToken: "test"),
-            mom: MomListRow(id: UUID(), userId: UUID(), fullName: "Adithya Ekanayaka", district: "Kalutara"),
+            mom: MomListRow(id: UUID(), userId: UUID(), fullName: "Adithya Ekanayaka", district: "Kalutara", photoPath: nil),
             onSaved: {}
         )
     }

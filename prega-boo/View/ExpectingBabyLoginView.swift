@@ -10,6 +10,7 @@ struct ExpectingBabyLoginView: View {
     @State private var isSubmitting = false
     @State private var errorMessage: String?
     @State private var goToDashboard = false
+    @State private var momGoogleOnboarding: MomGoogleOnboardingRoute?
 
     var body: some View {
         ZStack {
@@ -53,6 +54,13 @@ struct ExpectingBabyLoginView: View {
                 EmptyView()
             }
         )
+        .navigationDestination(item: $momGoogleOnboarding) { route in
+            MomOAuthProfileCompletionView(
+                session: route.session,
+                suggestedFullName: route.suggestedName,
+                suggestedEmail: route.suggestedEmail
+            )
+        }
     }
 
     private var topBar: some View {
@@ -114,9 +122,26 @@ struct ExpectingBabyLoginView: View {
                 .frame(maxWidth: .infinity, alignment: .center)
 
             HStack(spacing: 18) {
-                socialCircle(label: "G")
-                socialCircle(systemImage: "apple.logo")
-                socialCircle(systemImage: "envelope.fill")
+                Button(action: submitGoogleLogin) {
+                    socialCircle(label: "G")
+                }
+                .buttonStyle(.plain)
+                .disabled(isSubmitting)
+
+                Button(action: {
+                    errorMessage = "Sign in with Apple is not set up yet."
+                }) {
+                    socialCircle(systemImage: "apple.logo")
+                }
+                .buttonStyle(.plain)
+                .disabled(isSubmitting)
+
+                NavigationLink {
+                    ManualRegistrationView(model: ManualRegistrationController().loadModel())
+                } label: {
+                    socialCircle(systemImage: "envelope.fill")
+                }
+                .buttonStyle(.plain)
             }
             .frame(maxWidth: .infinity, alignment: .center)
 
@@ -141,6 +166,67 @@ struct ExpectingBabyLoginView: View {
         .padding(.horizontal, 18)
         .background(model.cardColor)
         .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
+    }
+
+    private func submitGoogleLogin() {
+        errorMessage = nil
+
+        let configuredKey = SupabaseSecrets.anonKey
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .replacingOccurrences(of: "\"", with: "")
+        if configuredKey.isEmpty || configuredKey == "PASTE_YOUR_ANON_KEY_HERE" {
+            errorMessage = "Supabase anon key is not set. Update SupabaseSecrets.swift (Project Settings → API → anon public)."
+            return
+        }
+
+        isSubmitting = true
+        Task { @MainActor in
+            defer { isSubmitting = false }
+            do {
+                let authSession = try await SupabaseGoogleOAuthService.signInWithGoogle()
+                let userId = authSession.user.id
+                let token = authSession.accessToken
+
+                var role = try await UserRoleRepository().fetchRole(userId: userId, accessToken: token)
+                if role == nil {
+                    try await UserRoleRepository().insertRole(userId: userId, role: .mom, accessToken: token)
+                    role = .mom
+                }
+
+                guard role == .mom else {
+                    errorMessage = "This account is not registered as a mom. Please use the correct login."
+                    return
+                }
+
+                let profile = try await MomProfileRepository().fetchOwnProfile(userId: userId, accessToken: token)
+                let hints = try await SupabaseAuthService().fetchSessionUserHints(accessToken: token)
+
+                let context = AuthSessionContext(userId: userId, accessToken: token)
+                if profile != nil {
+                    MomSessionStore.shared.setSession(context)
+                    goToDashboard = true
+                } else {
+                    momGoogleOnboarding = MomGoogleOnboardingRoute(
+                        session: context,
+                        suggestedName: hints.displayName,
+                        suggestedEmail: hints.email
+                    )
+                }
+            } catch let authError as SupabaseAuthError {
+                switch authError {
+                case .missingSession:
+                    errorMessage = "Google sign-in did not return a session."
+                case .emailConfirmationRequired:
+                    errorMessage = "Please confirm your email, then try again."
+                case .invalidInput(let msg):
+                    errorMessage = msg
+                }
+            } catch SupabaseServiceError.httpError(let status, let body) {
+                errorMessage = "Google sign-in failed (\(status)): \(SupabaseAuthService.humanMessage(fromBody: body))"
+            } catch {
+                errorMessage = "Google sign-in failed: \(error.localizedDescription)"
+            }
+        }
     }
 
     private func submitLogin() {
@@ -244,4 +330,10 @@ struct ExpectingBabyLoginView: View {
     NavigationStack {
         ExpectingBabyLoginView(model: model)
     }
+}
+
+private struct MomGoogleOnboardingRoute: Hashable {
+    let session: AuthSessionContext
+    let suggestedName: String?
+    let suggestedEmail: String?
 }

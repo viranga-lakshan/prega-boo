@@ -9,6 +9,7 @@ struct MidwifeMomDetailsView: View {
 
     @State private var children: [ChildProfile] = []
     @State private var childPhotoById: [UUID: UIImage] = [:]
+    @State private var momPhoto: UIImage?
     @State private var isLoading = false
     @State private var errorMessage: String?
 
@@ -88,6 +89,7 @@ struct MidwifeMomDetailsView: View {
         .navigationBarBackButtonHidden(true)
         .onAppear {
             loadChildren()
+            loadMomPhoto()
         }
         .alert(
             "Error",
@@ -117,12 +119,41 @@ struct MidwifeMomDetailsView: View {
                 .fill(Color.black.opacity(0.06))
                 .frame(width: 56, height: 56)
                 .overlay(
-                    Image(systemName: "person.fill")
-                        .font(.system(size: 22, weight: .bold))
-                        .foregroundStyle(Color.black.opacity(0.25))
+                    Group {
+                        if let momPhoto {
+                            Image(uiImage: momPhoto)
+                                .resizable()
+                                .scaledToFill()
+                        } else {
+                            Image(systemName: "person.fill")
+                                .font(.system(size: 22, weight: .bold))
+                                .foregroundStyle(Color.black.opacity(0.25))
+                        }
+                    }
                 )
+                .clipShape(Circle())
 
             Color.clear.frame(width: 44, height: 44)
+        }
+    }
+
+    private func loadMomPhoto() {
+        guard let path = mom.photoPath, !path.isEmpty else {
+            momPhoto = nil
+            return
+        }
+
+        Task {
+            do {
+                let data = try await MomProfileRepository().fetchProfilePhoto(path: path, accessToken: session.accessToken)
+                await MainActor.run {
+                    momPhoto = UIImage(data: data)
+                }
+            } catch {
+                await MainActor.run {
+                    momPhoto = nil
+                }
+            }
         }
     }
 
@@ -377,7 +408,7 @@ struct MidwifeMomDetailsView: View {
         MidwifeMomDetailsView(
             model: MidwifeMomDetailsController().loadModel(),
             session: AuthSessionContext(userId: UUID(), accessToken: "test"),
-            mom: MomListRow(id: UUID(), userId: UUID(), fullName: "Adithya Ekanayaka", district: "Kalutara")
+            mom: MomListRow(id: UUID(), userId: UUID(), fullName: "Adithya Ekanayaka", district: "Kalutara", photoPath: nil)
         )
     }
 }

@@ -9,7 +9,7 @@ final class MidwifeMomsRepository {
 
     func fetchMoms(accessToken: String, limit: Int, offset: Int) async throws -> [MomListRow] {
         let queryItems: [URLQueryItem] = [
-            URLQueryItem(name: "select", value: "id,user_id,full_name,district"),
+            URLQueryItem(name: "select", value: "id,user_id,full_name,district,photo_path"),
             URLQueryItem(name: "order", value: "created_at.desc"),
             URLQueryItem(name: "limit", value: String(limit)),
             URLQueryItem(name: "offset", value: String(offset))

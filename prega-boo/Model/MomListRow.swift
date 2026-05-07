@@ -6,12 +6,14 @@ struct MomListRow: Identifiable, Codable, Hashable {
 
     let fullName: String
     let district: String
+    let photoPath: String?
 
     enum CodingKeys: String, CodingKey {
         case id
         case userId = "user_id"
         case fullName = "full_name"
         case district
+        case photoPath = "photo_path"
     }
 
     /// Stable numeric-looking ID for UI display.

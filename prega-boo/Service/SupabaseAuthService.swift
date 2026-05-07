@@ -165,4 +165,25 @@ final class SupabaseAuthService {
 
         return try JSONDecoder().decode(PasswordGrantResponse.self, from: data)
     }
+
+    /// Reads `/auth/v1/user` for OAuth profile hints (name from Google is stored in `user_metadata`).
+    func fetchSessionUserHints(accessToken: String) async throws -> (email: String?, displayName: String?) {
+        let (data, _) = try await supabase.request(
+            path: "/auth/v1/user",
+            headers: [
+                "Authorization": "Bearer \(accessToken.trimmingCharacters(in: .whitespacesAndNewlines))"
+            ]
+        )
+        guard let obj = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+            return (nil, nil)
+        }
+        let email = obj["email"] as? String
+        var displayName: String?
+        if let meta = obj["user_metadata"] as? [String: Any] {
+            displayName = (meta["full_name"] as? String)
+                ?? (meta["name"] as? String)
+                ?? (meta["given_name"] as? String)
+        }
+        return (email, displayName)
+    }
 }

@@ -31,6 +31,7 @@ struct MomAndBabyDetailsView: View {
     @State private var showGrowthTracking = false
 
     @State private var momProfile: MomProfile?
+    @State private var momProfilePhoto: UIImage?
     @State private var children: [ChildProfile] = []
     @State private var childPhotoById: [UUID: UIImage] = [:]
     @State private var isLoadingHub = false
@@ -158,10 +159,32 @@ struct MomAndBabyDetailsView: View {
             let (p, c) = try await (profile, kids)
             momProfile = p
             children = c
+            await loadMomPhoto(profile: p, accessToken: s.accessToken)
             await loadChildPhotos(children: c, accessToken: s.accessToken)
         } catch {
+            momProfile = nil
+            momProfilePhoto = nil
             children = []
             childPhotoById = [:]
+        }
+    }
+
+    private func loadMomPhoto(profile: MomProfile?, accessToken: String) async {
+        guard let path = profile?.photoPath, !path.isEmpty else {
+            await MainActor.run { momProfilePhoto = nil }
+            return
+        }
+
+        do {
+            let data = try await MomProfileRepository().fetchProfilePhoto(path: path, accessToken: accessToken)
+            let image = UIImage(data: data)
+            await MainActor.run {
+                momProfilePhoto = image
+            }
+        } catch {
+            await MainActor.run {
+                momProfilePhoto = nil
+            }
         }
     }
 
@@ -242,9 +265,17 @@ struct MomAndBabyDetailsView: View {
                     .frame(width: 110, height: 110)
                     .shadow(color: Color.black.opacity(0.10), radius: 16, x: 0, y: 10)
 
-                Image(systemName: "person.crop.circle.fill")
-                    .font(.system(size: 110))
-                    .foregroundStyle(Color.black.opacity(0.18))
+                if let momProfilePhoto {
+                    Image(uiImage: momProfilePhoto)
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: 110, height: 110)
+                        .clipShape(Circle())
+                } else {
+                    Image(systemName: "person.crop.circle.fill")
+                        .font(.system(size: 110))
+                        .foregroundStyle(Color.black.opacity(0.18))
+                }
 
                 Circle()
                     .fill(model.accentColor)
