@@ -319,6 +319,7 @@ struct ManualRegistrationView: View {
                 registrationContext = RegistrationContext(
                     userId: session.user.id,
                     accessToken: session.accessToken,
+                    refreshToken: session.refreshToken,
                     fullName: trimmedName,
                     contactNumber: "\(model.countryCode)\(trimmedContact)",
                     district: selectedDistrict,

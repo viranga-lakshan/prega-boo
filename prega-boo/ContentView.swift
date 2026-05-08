@@ -11,6 +11,7 @@ struct ContentView: View {
     @StateObject private var momSession = MomSessionStore.shared
     @StateObject private var appLock = AppLockManager.shared
     @StateObject private var deepLinkRouter = DeepLinkRouter.shared
+    @StateObject private var accessibilitySettings = AppAccessibilitySettingsStore.shared
 
     private let lockAccent = Color(red: 0.94, green: 0.39, blue: 0.45)
 
@@ -27,8 +28,24 @@ struct ContentView: View {
         .environmentObject(momSession)
         .environmentObject(appLock)
         .environmentObject(deepLinkRouter)
+        .environmentObject(accessibilitySettings)
+        .dynamicTypeSize(
+            accessibilitySettings.dynamicTextEnabled
+            ? DynamicTypeSize.xSmall ... DynamicTypeSize.accessibility3
+            : DynamicTypeSize.large ... DynamicTypeSize.large
+        )
         .onOpenURL { url in
             deepLinkRouter.handle(url)
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .supabaseSessionExpired)) { _ in
+            // Try silent refresh first. Only return to sign-in if refresh fails.
+            Task { @MainActor in
+                let refreshed = await momSession.refreshSessionIfPossible()
+                if !refreshed {
+                    momSession.clearSession()
+                    appLock.resetLockPreferences()
+                }
+            }
         }
         // Present the app-lock screen as a full-screen cover so it sits above
         // the entire navigation stack — this is essential when the widget

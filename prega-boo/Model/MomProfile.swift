@@ -1,6 +1,6 @@
 import Foundation
 
-struct MomProfile: Codable {
+struct MomProfile: Codable, Equatable {
     let id: UUID?
     let userId: UUID
 

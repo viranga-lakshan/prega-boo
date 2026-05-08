@@ -5,6 +5,10 @@ enum SupabaseServiceError: Error {
     case httpError(status: Int, body: String)
 }
 
+extension Notification.Name {
+    static let supabaseSessionExpired = Notification.Name("supabaseSessionExpired")
+}
+
 final class SupabaseService {
     static let shared = SupabaseService(
         baseURL: SupabaseSecrets.url,
@@ -77,6 +81,14 @@ final class SupabaseService {
         }
 
         let bodyString = String(data: data, encoding: .utf8) ?? ""
+        if http.statusCode == 401 {
+            let normalized = bodyString.lowercased()
+            if normalized.contains("jwt expired") || normalized.contains("invalid jwt") {
+                DispatchQueue.main.async {
+                    NotificationCenter.default.post(name: .supabaseSessionExpired, object: nil)
+                }
+            }
+        }
         throw SupabaseServiceError.httpError(status: http.statusCode, body: bodyString)
     }
 

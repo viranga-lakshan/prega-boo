@@ -184,7 +184,11 @@ struct ExpectingBabyLoginView: View {
                 let profile = try await MomProfileRepository().fetchOwnProfile(userId: userId, accessToken: token)
                 let hints = try await SupabaseAuthService().fetchSessionUserHints(accessToken: token)
 
-                let context = AuthSessionContext(userId: userId, accessToken: token)
+                let context = AuthSessionContext(
+                    userId: userId,
+                    accessToken: token,
+                    refreshToken: authSession.refreshToken
+                )
                 if profile != nil {
                     MomSessionStore.shared.setSession(context)
                     goToDashboard = true
@@ -250,7 +254,11 @@ struct ExpectingBabyLoginView: View {
 
                 await MainActor.run {
                     MomSessionStore.shared.setSession(
-                        AuthSessionContext(userId: session.user.id, accessToken: session.accessToken)
+                        AuthSessionContext(
+                            userId: session.user.id,
+                            accessToken: session.accessToken,
+                            refreshToken: session.refreshToken
+                        )
                     )
                 }
                 goToDashboard = true

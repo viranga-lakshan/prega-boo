@@ -14,6 +14,7 @@ struct MomDashboardView: View {
     @EnvironmentObject private var appLock: AppLockManager
     @EnvironmentObject private var momSession: MomSessionStore
     @EnvironmentObject private var deepLinkRouter: DeepLinkRouter
+    @EnvironmentObject private var accessibilitySettings: AppAccessibilitySettingsStore
 
     @State private var selectedTab: MomDashboardTab = .home
     @State private var showMomAndBabyDetails = false
@@ -255,6 +256,8 @@ struct MomDashboardView: View {
 
     private func menuRow(_ item: MomDashboardMenuItem) -> some View {
         Button(action: {
+            AppAccessibilityFeedbackService.shared.playTap()
+            AppAccessibilityFeedbackService.shared.speak(item.title)
             if item.title == "Mom & Babies Details" {
                 showMomAndBabyDetails = true
             } else if item.title == "Reminders" {
@@ -314,6 +317,8 @@ struct MomDashboardView: View {
     private func tabButton(tab: MomDashboardTab, title: String, systemImage: String) -> some View {
         Button {
             selectedTab = tab
+            AppAccessibilityFeedbackService.shared.playTap()
+            AppAccessibilityFeedbackService.shared.speak(title)
         } label: {
             VStack(spacing: 6) {
                 Image(systemName: systemImage)
@@ -394,4 +399,5 @@ extension MomDashboardView {
         .environmentObject(MomSessionStore.shared)
         .environmentObject(AppLockManager.shared)
         .environmentObject(DeepLinkRouter.shared)
+        .environmentObject(AppAccessibilitySettingsStore.shared)
 }

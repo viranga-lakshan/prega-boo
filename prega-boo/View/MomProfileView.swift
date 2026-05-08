@@ -7,6 +7,7 @@ struct MomProfileView: View {
 
     @EnvironmentObject private var momSession: MomSessionStore
     @EnvironmentObject private var appLock: AppLockManager
+    @EnvironmentObject private var accessibilitySettings: AppAccessibilitySettingsStore
 
     @State private var profile: MomProfile?
     @State private var isLoadingProfile = false
@@ -19,6 +20,7 @@ struct MomProfileView: View {
     @State private var showSignOutConfirm = false
     @State private var localAlert: String?
     @State private var securityUIRevision = 0
+    @State private var hasSpokenProfileOverview = false
 
     var body: some View {
         ScrollView(showsIndicators: false) {
@@ -32,6 +34,9 @@ struct MomProfileView: View {
 
                 securityCard
                     .id(securityUIRevision)
+                    .padding(.horizontal, 18)
+
+                accessibilityCard
                     .padding(.horizontal, 18)
 
                 signOutButton
@@ -89,6 +94,32 @@ struct MomProfileView: View {
         .confirmationDialog("Sign out?", isPresented: $showSignOutConfirm, titleVisibility: .visible) {
             Button("Sign out", role: .destructive) { signOut() }
             Button("Cancel", role: .cancel) {}
+        }
+        .onAppear {
+            speakProfileOverviewIfNeeded()
+        }
+        .onChange(of: profileOverviewKey) { _, _ in
+            speakProfileOverviewIfNeeded()
+        }
+        .onChange(of: accessibilitySettings.screenReaderEnabled) { _, enabled in
+            if enabled {
+                AppAccessibilityFeedbackService.shared.playSuccess()
+                AppAccessibilityFeedbackService.shared.speak("Screen reader enabled")
+                hasSpokenProfileOverview = false
+                speakProfileOverviewIfNeeded()
+            } else {
+                AppAccessibilityFeedbackService.shared.playTap()
+            }
+        }
+        .onChange(of: accessibilitySettings.soundEffectsEnabled) { _, enabled in
+            if enabled {
+                AppAccessibilityFeedbackService.shared.playSuccess()
+                AppAccessibilityFeedbackService.shared.speak("Sound effects enabled")
+            }
+        }
+        .onChange(of: accessibilitySettings.dynamicTextEnabled) { _, enabled in
+            AppAccessibilityFeedbackService.shared.playTap()
+            AppAccessibilityFeedbackService.shared.speak(enabled ? "Dynamic text enabled" : "Dynamic text disabled")
         }
     }
 
@@ -323,6 +354,55 @@ struct MomProfileView: View {
         .buttonStyle(.plain)
     }
 
+    private var accessibilityCard: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("Accessibility")
+                .font(.system(size: 13, weight: .bold))
+                .foregroundStyle(dashboardModel.accentColor)
+
+            Toggle(isOn: $accessibilitySettings.screenReaderEnabled) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Screen reader")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundStyle(Color.black.opacity(0.78))
+                    Text("Improve spoken guidance and VoiceOver-friendly flow.")
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundStyle(Color.black.opacity(0.4))
+                }
+            }
+            .tint(dashboardModel.accentColor)
+
+            Toggle(isOn: $accessibilitySettings.soundEffectsEnabled) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Sound effects")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundStyle(Color.black.opacity(0.78))
+                    Text("Play short app sounds for actions and feedback.")
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundStyle(Color.black.opacity(0.4))
+                }
+            }
+            .tint(dashboardModel.accentColor)
+
+            Toggle(isOn: $accessibilitySettings.dynamicTextEnabled) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Dynamic text")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundStyle(Color.black.opacity(0.78))
+                    Text("Use iPhone text size settings across the app.")
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundStyle(Color.black.opacity(0.4))
+                }
+            }
+            .tint(dashboardModel.accentColor)
+        }
+        .padding(18)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color.white)
+        .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
+        .shadow(color: Color.black.opacity(0.06), radius: 12, y: 4)
+    }
+
     private func loadProfile() async {
         profileError = nil
         guard let session = momSession.session else {
@@ -373,6 +453,42 @@ struct MomProfileView: View {
         momSession.clearSession()
         profile = nil
         localAlert = "You are signed out on this device. Use the back button to return to sign in, or restart the app."
+    }
+
+    private func speakProfileOverviewIfNeeded() {
+        guard accessibilitySettings.screenReaderEnabled, !hasSpokenProfileOverview else { return }
+
+        var parts: [String] = []
+        parts.append("Mom profile screen.")
+
+        if let p = profile {
+            parts.append("Full name \(p.fullName).")
+            parts.append("Contact \(p.contactNumber).")
+            parts.append("District \(p.district).")
+            if let lmp = p.lmpDate, !lmp.isEmpty {
+                parts.append("L M P date \(lmp).")
+            }
+        } else if isLoadingProfile {
+            parts.append("Profile details are loading.")
+        } else if let profileError, !profileError.isEmpty {
+            parts.append("Profile load error. \(profileError)")
+        } else {
+            parts.append("No profile details found yet.")
+        }
+
+        parts.append(PINAuthStore.shared.hasPIN ? "PIN lock is currently enabled." : "PIN lock is currently disabled.")
+        parts.append(appLock.preferBiometricUnlock ? "Biometric unlock is enabled." : "Biometric unlock is disabled.")
+        parts.append("Accessibility section includes screen reader, sound effects, and dynamic text toggles.")
+
+        AppAccessibilityFeedbackService.shared.speak(parts.joined(separator: " "))
+        hasSpokenProfileOverview = true
+    }
+
+    private var profileOverviewKey: String {
+        guard let p = profile else {
+            return isLoadingProfile ? "loading" : "empty"
+        }
+        return "\(p.userId.uuidString)|\(p.fullName)|\(p.contactNumber)|\(p.district)|\(p.lmpDate ?? "")"
     }
 }
 
@@ -644,4 +760,5 @@ struct PINSetupSheetView: View {
     )
     .environmentObject(MomSessionStore.shared)
     .environmentObject(AppLockManager.shared)
+    .environmentObject(AppAccessibilitySettingsStore.shared)
 }

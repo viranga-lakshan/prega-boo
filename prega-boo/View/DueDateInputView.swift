@@ -102,7 +102,11 @@ struct DueDateInputView: View {
                 if let registration {
                     await MainActor.run {
                         MomSessionStore.shared.setSession(
-                            AuthSessionContext(userId: registration.userId, accessToken: registration.accessToken)
+                            AuthSessionContext(
+                                userId: registration.userId,
+                                accessToken: registration.accessToken,
+                                refreshToken: registration.refreshToken
+                            )
                         )
                     }
                 }

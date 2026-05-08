@@ -166,6 +166,26 @@ final class SupabaseAuthService {
         return try JSONDecoder().decode(PasswordGrantResponse.self, from: data)
     }
 
+    func refreshSession(refreshToken: String) async throws -> PasswordGrantResponse {
+        let trimmed = refreshToken.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else {
+            throw SupabaseAuthError.invalidInput("Missing refresh token.")
+        }
+
+        let payload = ["refresh_token": trimmed]
+        let body = try JSONSerialization.data(withJSONObject: payload)
+
+        let (data, _) = try await supabase.request(
+            path: "/auth/v1/token",
+            method: "POST",
+            queryItems: [URLQueryItem(name: "grant_type", value: "refresh_token")],
+            headers: ["Content-Type": "application/json"],
+            body: body
+        )
+
+        return try JSONDecoder().decode(PasswordGrantResponse.self, from: data)
+    }
+
     /// Reads `/auth/v1/user` for OAuth profile hints (name from Google is stored in `user_metadata`).
     func fetchSessionUserHints(accessToken: String) async throws -> (email: String?, displayName: String?) {
         let (data, _) = try await supabase.request(

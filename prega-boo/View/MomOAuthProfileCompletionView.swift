@@ -252,6 +252,7 @@ struct MomOAuthProfileCompletionView: View {
                 registrationContext = RegistrationContext(
                     userId: session.userId,
                     accessToken: session.accessToken,
+                    refreshToken: session.refreshToken,
                     fullName: trimmedName,
                     contactNumber: "\(countryCode)\(trimmedContact)",
                     district: selectedDistrict,
