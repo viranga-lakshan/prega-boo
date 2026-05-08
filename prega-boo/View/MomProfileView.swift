@@ -98,8 +98,17 @@ struct MomProfileView: View {
         .onAppear {
             speakProfileOverviewIfNeeded()
         }
+        .onDisappear {
+            // Reset so profile summary can be read again next time user opens this tab.
+            hasSpokenProfileOverview = false
+        }
         .onChange(of: profileOverviewKey) { _, _ in
             speakProfileOverviewIfNeeded()
+        }
+        .onChange(of: isLoadingProfile) { _, loading in
+            if !loading {
+                speakProfileOverviewIfNeeded()
+            }
         }
         .onChange(of: accessibilitySettings.screenReaderEnabled) { _, enabled in
             if enabled {
@@ -480,7 +489,12 @@ struct MomProfileView: View {
         parts.append(appLock.preferBiometricUnlock ? "Biometric unlock is enabled." : "Biometric unlock is disabled.")
         parts.append("Accessibility section includes screen reader, sound effects, and dynamic text toggles.")
 
-        AppAccessibilityFeedbackService.shared.speak(parts.joined(separator: " "))
+        let message = parts.joined(separator: " ")
+        // Slight delay gives SwiftUI time to finish presenting the tab content
+        // before the announcement starts.
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+            AppAccessibilityFeedbackService.shared.speak(message)
+        }
         hasSpokenProfileOverview = true
     }
 

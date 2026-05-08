@@ -318,7 +318,11 @@ struct MomDashboardView: View {
         Button {
             selectedTab = tab
             AppAccessibilityFeedbackService.shared.playTap()
-            AppAccessibilityFeedbackService.shared.speak(title)
+            if tab == .profile {
+                AppAccessibilityFeedbackService.shared.speak("Opening profile screen")
+            } else {
+                AppAccessibilityFeedbackService.shared.speak(title)
+            }
         } label: {
             VStack(spacing: 6) {
                 Image(systemName: systemImage)

@@ -1,6 +1,7 @@
 import AudioToolbox
 import AVFoundation
 import Foundation
+import UIKit
 
 @MainActor
 final class AppAccessibilityFeedbackService {
@@ -14,6 +15,11 @@ final class AppAccessibilityFeedbackService {
         guard AppAccessibilitySettingsStore.shared.screenReaderEnabled else { return }
         let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return }
+
+        if UIAccessibility.isVoiceOverRunning {
+            UIAccessibility.post(notification: .announcement, argument: trimmed)
+            return
+        }
 
         if synth.isSpeaking {
             synth.stopSpeaking(at: .immediate)
